@@ -9,4 +9,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Fetch release version
-        run: npm info three version
+        run: npm info three version > release-versions/three-latest.txt
+      - name: Check for modified files
+        id: git-check
+        run: echo ::set-output name=modified::$([ -z "`git status --porcelain`" ] && echo "false" || echo "true")
+      - name: Commit latest release version
+        if: steps.git-check.outputs.modified == 'true'
+        run: echo Hello, world!
