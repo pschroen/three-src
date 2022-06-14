@@ -1,0 +1,21 @@
+{
+  "name": "three",
+  "version": "test",
+  "description": "JavaScript 3D library",
+  "type": "module",
+  "main": "src/Three.js",
+  "sideEffects": false,
+  "directories": {
+    "example": "examples"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mrdoob/three.js"
+  },
+  "author": "mrdoob",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mrdoob/three.js/issues"
+  },
+  "homepage": "https://threejs.org/"
+}

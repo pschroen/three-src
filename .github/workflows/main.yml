@@ -4,22 +4,36 @@ on:
     - cron: 0 10 * * *
   workflow_dispatch:
 jobs:
-  get-version:
+  get-release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Fetch release version
         id: three-info
-        run: echo ::set-output name=version::r$(npm info three version | sed -e 's/^0.//')
+        run: |
+          echo ::set-output name=version::$(npm info three version)
+          echo ::set-output name=tarball::$(npm view three dist.tarball)
       - name: Write release version
-        run: echo "${{ steps.three-info.outputs.version }}" > release-versions/three-latest.txt
-      - name: Check for modified files
+        run: echo ${{ steps.three-info.outputs.version }} > release-versions/three-latest.txt
+      - name: Check for modified version
         id: git-check
         run: echo ::set-output name=modified::$([ -z "`git status --porcelain`" ] && echo "false" || echo "true")
-      - name: Commit latest release version
+      - name: Download and extract files
+        if: steps.git-check.outputs.modified == 'true'
+        run: curl -sL ${{ steps.three-info.outputs.tarball }} | tar -xzf -
+      - name: Pure as the driven snow
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          rm -rf package/build package/examples/js package/package.json
+          find package -name '*.js' -exec sed -i -r -e 's/\/\*@__PURE__\*\/\s?//g' {} \;
+          mv package/* .
+          rm -rf package
+          sed -i -r -e 's/"version": "(.*)"/"version": "${{ steps.three-info.outputs.version }}"/' package.json
+      - name: Commit latest release
         if: steps.git-check.outputs.modified == 'true'
         run: |
           git config --global user.name "Patrick Schroen"
           git config --global user.email "ps@ufotechnologies.com"
-          git commit -am "${{ steps.three-info.outputs.version }}"
+          git add .
+          git commit -am "r$(echo ${{ steps.three-info.outputs.version }} | sed -e 's/^0.//')"
           git push
