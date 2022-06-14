@@ -1,4 +1,4 @@
-name: Get latest release version
+name: Get latest release
 on:
   schedule:
     - cron: 0 10 * * *
@@ -9,14 +9,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Fetch release version
-        run: npm info three version > release-versions/three-latest.txt
+        id: three-info
+        run: echo ::set-output name=version::r$(npm info three version | sed -e 's/^0.//')
+      - name: Write release version
+        run: echo "${{ steps.three-info.outputs.version }}" > release-versions/three-latest.txt
       - name: Check for modified files
         id: git-check
         run: echo ::set-output name=modified::$([ -z "`git status --porcelain`" ] && echo "false" || echo "true")
       - name: Commit latest release version
         if: steps.git-check.outputs.modified == 'true'
-        run: |
-          git config --global user.name 'Patrick Schroen'
-          git config --global user.email 'ps@ufotechnologies.com'
-          git commit -am "New release version"
-          git push
+        run: echo Hello, world!
