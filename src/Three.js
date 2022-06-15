@@ -1,3 +1,9 @@
+/*!
+ * @license
+ * Copyright 2010-2022 Three.js Authors
+ * SPDX-License-Identifier: MIT
+ */
+
 import { REVISION } from './constants.js';
 
 export { WebGLArrayRenderTarget } from './renderers/WebGLArrayRenderTarget.js';
