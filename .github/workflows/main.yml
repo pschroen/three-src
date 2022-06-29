@@ -26,7 +26,7 @@ jobs:
         run: |
           rm -rf package/build package/examples/js package/package.json
           find package -name '*.js' -exec sed -i -r -e 's/\/\*@__PURE__\*\/\s?//g' {} \;
-          mv package/* .
+          rsync -a --delete package/* .
           rm -rf package
           sed -i -r -e 's/"version": "(.*)"/"version": "${{ steps.three-info.outputs.version }}"/' package.json
       - name: Commit latest release

@@ -79,7 +79,9 @@ function CubicPoly() {
 //
 
 const tmp = new Vector3();
-const px = new CubicPoly(), py = new CubicPoly(), pz = new CubicPoly();
+const px = new CubicPoly();
+const py = new CubicPoly();
+const pz = new CubicPoly();
 
 class CatmullRomCurve3 extends Curve {
 
