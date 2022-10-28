@@ -7,6 +7,7 @@ const _instanceWorldMatrix = new Matrix4();
 
 const _instanceIntersects = [];
 
+const _identity = new Matrix4();
 const _mesh = new Mesh();
 
 class InstancedMesh extends Mesh {
@@ -23,6 +24,12 @@ class InstancedMesh extends Mesh {
 		this.count = count;
 
 		this.frustumCulled = false;
+
+		for ( let i = 0; i < count; i ++ ) {
+
+			this.setMatrixAt( i, _identity );
+
+		}
 
 	}
 
