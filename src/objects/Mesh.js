@@ -12,6 +12,7 @@ import { BufferGeometry } from '../core/BufferGeometry.js';
 const _inverseMatrix = new Matrix4();
 const _ray = new Ray();
 const _sphere = new Sphere();
+const _sphereHitAt = new Vector3();
 
 const _vA = new Vector3();
 const _vB = new Vector3();
@@ -163,7 +164,15 @@ class Mesh extends Object3D {
 		_sphere.copy( geometry.boundingSphere );
 		_sphere.applyMatrix4( matrixWorld );
 
-		if ( raycaster.ray.intersectsSphere( _sphere ) === false ) return;
+		_ray.copy( raycaster.ray ).recast( raycaster.near );
+
+		if ( _sphere.containsPoint( _ray.origin ) === false ) {
+
+			if ( _ray.intersectSphere( _sphere, _sphereHitAt ) === null ) return;
+
+			if ( _ray.origin.distanceToSquared( _sphereHitAt ) > ( raycaster.far - raycaster.near ) ** 2 ) return;
+
+		}
 
 		//
 
