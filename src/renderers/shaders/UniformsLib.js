@@ -14,10 +14,11 @@ const UniformsLib = {
 		opacity: { value: 1.0 },
 
 		map: { value: null },
-		uvTransform: { value: new Matrix3() },
-		uv2Transform: { value: new Matrix3() },
+		mapTransform: { value: new Matrix3() },
 
 		alphaMap: { value: null },
+		alphaMapTransform: { value: new Matrix3() },
+
 		alphaTest: { value: 0 }
 
 	},
@@ -25,6 +26,7 @@ const UniformsLib = {
 	specularmap: {
 
 		specularMap: { value: null },
+		specularMapTransform: { value: new Matrix3() }
 
 	},
 
@@ -41,26 +43,23 @@ const UniformsLib = {
 	aomap: {
 
 		aoMap: { value: null },
-		aoMapIntensity: { value: 1 }
+		aoMapIntensity: { value: 1 },
+		aoMapTransform: { value: new Matrix3() }
 
 	},
 
 	lightmap: {
 
 		lightMap: { value: null },
-		lightMapIntensity: { value: 1 }
-
-	},
-
-	emissivemap: {
-
-		emissiveMap: { value: null }
+		lightMapIntensity: { value: 1 },
+		lightMapTransform: { value: new Matrix3() }
 
 	},
 
 	bumpmap: {
 
 		bumpMap: { value: null },
+		bumpMapTransform: { value: new Matrix3() },
 		bumpScale: { value: 1 }
 
 	},
@@ -68,6 +67,7 @@ const UniformsLib = {
 	normalmap: {
 
 		normalMap: { value: null },
+		normalMapTransform: { value: new Matrix3() },
 		normalScale: { value: new Vector2( 1, 1 ) }
 
 	},
@@ -75,20 +75,30 @@ const UniformsLib = {
 	displacementmap: {
 
 		displacementMap: { value: null },
+		displacementMapTransform: { value: new Matrix3() },
 		displacementScale: { value: 1 },
 		displacementBias: { value: 0 }
 
 	},
 
-	roughnessmap: {
+	emissivemap: {
 
-		roughnessMap: { value: null }
+		emissiveMap: { value: null },
+		emissiveMapTransform: { value: new Matrix3() }
 
 	},
 
 	metalnessmap: {
 
-		metalnessMap: { value: null }
+		metalnessMap: { value: null },
+		metalnessMapTransform: { value: new Matrix3() }
+
+	},
+
+	roughnessmap: {
+
+		roughnessMap: { value: null },
+		roughnessMapTransform: { value: new Matrix3() }
 
 	},
 
@@ -207,9 +217,9 @@ const UniformsLib = {
 		center: { value: new Vector2( 0.5, 0.5 ) },
 		rotation: { value: 0.0 },
 		map: { value: null },
+		mapTransform: { value: new Matrix3() },
 		alphaMap: { value: null },
-		alphaTest: { value: 0 },
-		uvTransform: { value: new Matrix3() }
+		alphaTest: { value: 0 }
 
 	}
 
