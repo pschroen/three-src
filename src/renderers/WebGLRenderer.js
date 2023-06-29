@@ -289,7 +289,7 @@ class WebGLRenderer {
 
 			}
 
-			if ( _gl instanceof WebGLRenderingContext ) { // @deprecated, r153
+			if ( typeof WebGLRenderingContext !== 'undefined' && _gl instanceof WebGLRenderingContext ) { // @deprecated, r153
 
 				console.warn( 'THREE.WebGLRenderer: WebGL 1 support was deprecated in r153 and will be removed in r163.' );
 
@@ -607,15 +607,13 @@ class WebGLRenderer {
 					const g = clearColor.g;
 					const b = clearColor.b;
 
-					const __webglFramebuffer = properties.get( _currentRenderTarget ).__webglFramebuffer;
-
 					if ( isUnsignedType ) {
 
 						uintClearColor[ 0 ] = r;
 						uintClearColor[ 1 ] = g;
 						uintClearColor[ 2 ] = b;
 						uintClearColor[ 3 ] = a;
-						_gl.clearBufferuiv( _gl.COLOR, __webglFramebuffer, uintClearColor );
+						_gl.clearBufferuiv( _gl.COLOR, 0, uintClearColor );
 
 					} else {
 
@@ -623,7 +621,7 @@ class WebGLRenderer {
 						intClearColor[ 1 ] = g;
 						intClearColor[ 2 ] = b;
 						intClearColor[ 3 ] = a;
-						_gl.clearBufferiv( _gl.COLOR, __webglFramebuffer, intClearColor );
+						_gl.clearBufferiv( _gl.COLOR, 0, intClearColor );
 
 					}
 
@@ -1056,7 +1054,9 @@ class WebGLRenderer {
 
 			if ( xr.enabled === true && xr.isPresenting === true ) {
 
-				camera = xr.updateCameraXR( camera ); // use XR camera for rendering
+				if ( xr.cameraAutoUpdate === true ) xr.updateCamera( camera );
+
+				camera = xr.getCamera(); // use XR camera for rendering
 
 			}
 
@@ -1091,6 +1091,8 @@ class WebGLRenderer {
 
 			//
 
+			this.info.render.frame ++;
+
 			if ( _clippingEnabled === true ) clipping.beginShadows();
 
 			const shadowsArray = currentRenderState.state.shadowsArray;
@@ -1103,7 +1105,6 @@ class WebGLRenderer {
 
 			if ( this.info.autoReset === true ) this.info.reset();
 
-			this.info.render.frame ++;
 
 			//
 
@@ -1233,19 +1234,6 @@ class WebGLRenderer {
 
 					if ( ! object.frustumCulled || _frustum.intersectsObject( object ) ) {
 
-						if ( object.isSkinnedMesh ) {
-
-							// update skeleton only once in a frame
-
-							if ( object.skeleton.frame !== info.render.frame ) {
-
-								object.skeleton.update();
-								object.skeleton.frame = info.render.frame;
-
-							}
-
-						}
-
 						const geometry = objects.update( object );
 						const material = object.material;
 
@@ -1346,7 +1334,7 @@ class WebGLRenderer {
 					generateMipmaps: true,
 					type: extensions.has( 'EXT_color_buffer_half_float' ) ? HalfFloatType : UnsignedByteType,
 					minFilter: LinearMipmapLinearFilter,
-					samples: ( isWebGL2 && antialias === true ) ? 4 : 0
+					samples: ( isWebGL2 ) ? 4 : 0
 				} );
 
 				// debug
