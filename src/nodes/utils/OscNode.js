@@ -1,6 +1,6 @@
-import Node, { addNodeClass } from '../core/Node.js';
+import Node, { registerNode } from '../core/Node.js';
 import { timerLocal } from './TimerNode.js';
-import { nodeObject, nodeProxy } from '../shadernode/ShaderNode.js';
+import { nodeObject, nodeProxy } from '../tsl/TSLBase.js';
 
 class OscNode extends Node {
 
@@ -73,9 +73,9 @@ OscNode.SAWTOOTH = 'sawtooth';
 
 export default OscNode;
 
+OscNode.type = registerNode( 'Osc', OscNode );
+
 export const oscSine = nodeProxy( OscNode, OscNode.SINE );
 export const oscSquare = nodeProxy( OscNode, OscNode.SQUARE );
 export const oscTriangle = nodeProxy( OscNode, OscNode.TRIANGLE );
 export const oscSawtooth = nodeProxy( OscNode, OscNode.SAWTOOTH );
-
-addNodeClass( 'OscNode', OscNode );

@@ -1,6 +1,5 @@
-import Node from '../core/Node.js';
-import { addNodeClass } from '../core/Node.js';
-import { nodeImmutable } from '../shadernode/ShaderNode.js';
+import Node, { registerNode } from '../core/Node.js';
+import { nodeImmutable } from '../tsl/TSLBase.js';
 import { reference } from './ReferenceNode.js';
 
 class SceneNode extends Node {
@@ -46,7 +45,7 @@ SceneNode.BACKGROUND_INTENSITY = 'backgroundIntensity';
 
 export default SceneNode;
 
+SceneNode.type = registerNode( 'Scene', SceneNode );
+
 export const backgroundBlurriness = nodeImmutable( SceneNode, SceneNode.BACKGROUND_BLURRINESS );
 export const backgroundIntensity = nodeImmutable( SceneNode, SceneNode.BACKGROUND_INTENSITY );
-
-addNodeClass( 'SceneNode', SceneNode );
