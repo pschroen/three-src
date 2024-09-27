@@ -1,7 +1,13 @@
-import Node, { registerNode } from './Node.js';
+import Node from './Node.js';
 import { addMethodChaining, nodeProxy } from '../tsl/TSLCore.js';
 
 class BypassNode extends Node {
+
+	static get type() {
+
+		return 'BypassNode';
+
+	}
 
 	constructor( returnNode, callNode ) {
 
@@ -26,7 +32,7 @@ class BypassNode extends Node {
 
 		if ( snippet !== '' ) {
 
-			builder.addLineFlowCode( snippet );
+			builder.addLineFlowCode( snippet, this );
 
 		}
 
@@ -37,8 +43,6 @@ class BypassNode extends Node {
 }
 
 export default BypassNode;
-
-BypassNode.type = registerNode( 'Bypass', BypassNode );
 
 export const bypass = nodeProxy( BypassNode );
 

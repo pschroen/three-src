@@ -1,14 +1,22 @@
-import { registerNode } from '../core/Node.js';
 import ReferenceBaseNode from './ReferenceBaseNode.js';
 import { nodeObject } from '../tsl/TSLCore.js';
+import { renderGroup } from '../core/UniformGroupNode.js';
 
 class RendererReferenceNode extends ReferenceBaseNode {
+
+	static get type() {
+
+		return 'RendererReferenceNode';
+
+	}
 
 	constructor( property, inputType, renderer = null ) {
 
 		super( property, inputType, renderer );
 
 		this.renderer = renderer;
+
+		this.setGroup( renderGroup );
 
 	}
 
@@ -23,7 +31,5 @@ class RendererReferenceNode extends ReferenceBaseNode {
 }
 
 export default RendererReferenceNode;
-
-RendererReferenceNode.type = registerNode( 'RendererReference', RendererReferenceNode );
 
 export const rendererReference = ( name, type, renderer ) => nodeObject( new RendererReferenceNode( name, type, renderer ) );

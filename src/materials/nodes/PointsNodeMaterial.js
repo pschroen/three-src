@@ -1,10 +1,16 @@
-import NodeMaterial, { registerNodeMaterial } from './NodeMaterial.js';
+import NodeMaterial from './NodeMaterial.js';
 
 import { PointsMaterial } from '../PointsMaterial.js';
 
 const _defaultValues = new PointsMaterial();
 
 class PointsNodeMaterial extends NodeMaterial {
+
+	static get type() {
+
+		return 'PointsNodeMaterial';
+
+	}
 
 	constructor( parameters ) {
 
@@ -34,5 +40,3 @@ class PointsNodeMaterial extends NodeMaterial {
 }
 
 export default PointsNodeMaterial;
-
-PointsNodeMaterial.type = registerNodeMaterial( 'Points', PointsNodeMaterial );

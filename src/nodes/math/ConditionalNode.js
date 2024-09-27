@@ -1,8 +1,14 @@
-import Node, { registerNode } from '../core/Node.js';
+import Node from '../core/Node.js';
 import { property } from '../core/PropertyNode.js';
 import { addMethodChaining, nodeProxy } from '../tsl/TSLCore.js';
 
 class ConditionalNode extends Node {
+
+	static get type() {
+
+		return 'ConditionalNode';
+
+	}
 
 	constructor( condNode, ifNode, elseNode = null ) {
 
@@ -37,10 +43,23 @@ class ConditionalNode extends Node {
 
 	setup( builder ) {
 
+		const condNode = this.condNode.cache();
+		const ifNode = this.ifNode.cache();
+		const elseNode = this.elseNode ? this.elseNode.cache() : null;
+
+		//
+
+		const currentNodeBlock = builder.context.nodeBlock;
+
+		builder.getDataFromNode( ifNode ).parentNodeBlock = currentNodeBlock;
+		if ( elseNode !== null ) builder.getDataFromNode( elseNode ).parentNodeBlock = currentNodeBlock;
+
+		//
+
 		const properties = builder.getNodeProperties( this );
-		properties.condNode = this.condNode.cache();
-		properties.ifNode = this.ifNode.cache();
-		properties.elseNode = this.elseNode ? this.elseNode.cache() : null;
+		properties.condNode = condNode;
+		properties.ifNode = ifNode.context( { nodeBlock: ifNode } );
+		properties.elseNode = elseNode ? elseNode.context( { nodeBlock: elseNode } ) : null;
 
 	}
 
@@ -120,8 +139,6 @@ class ConditionalNode extends Node {
 }
 
 export default ConditionalNode;
-
-ConditionalNode.type = registerNode( 'Conditional', ConditionalNode );
 
 export const select = nodeProxy( ConditionalNode );
 

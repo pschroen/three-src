@@ -692,20 +692,22 @@ class WebGLTextureUtils {
 
 	}
 
-	copyFramebufferToTexture( texture, renderContext ) {
+	copyFramebufferToTexture( texture, renderContext, rectangle ) {
 
 		const { gl } = this;
 		const { state } = this.backend;
 
 		const { textureGPU } = this.backend.get( texture );
 
-		const width = texture.image.width;
-		const height = texture.image.height;
+		const { x, y, z: width, w: height } = rectangle;
 
 		const requireDrawFrameBuffer = texture.isDepthTexture === true || ( renderContext.renderTarget && renderContext.renderTarget.samples > 0 );
 
+		const srcHeight = renderContext.renderTarget ? renderContext.renderTarget.height : this.backend.gerDrawingBufferSize().y;
+
 		if ( requireDrawFrameBuffer ) {
 
+			const partial = ( x !== 0 || y !== 0 );
 			let mask;
 			let attachment;
 
@@ -727,19 +729,45 @@ class WebGLTextureUtils {
 
 			}
 
-			const fb = gl.createFramebuffer();
-			state.bindFramebuffer( gl.DRAW_FRAMEBUFFER, fb );
+			if ( partial ) {
 
-			gl.framebufferTexture2D( gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, textureGPU, 0 );
+				const renderTargetContextData = this.backend.get( renderContext.renderTarget );
 
-			gl.blitFramebuffer( 0, 0, width, height, 0, 0, width, height, mask, gl.NEAREST );
+				const fb = renderTargetContextData.framebuffers[ renderContext.getCacheKey() ];
+				const msaaFrameBuffer = renderTargetContextData.msaaFrameBuffer;
 
-			gl.deleteFramebuffer( fb );
+				state.bindFramebuffer( gl.DRAW_FRAMEBUFFER, fb );
+				state.bindFramebuffer( gl.READ_FRAMEBUFFER, msaaFrameBuffer );
+
+				const flippedY = srcHeight - y - height;
+
+				gl.blitFramebuffer( x, flippedY, x + width, flippedY + height, x, flippedY, x + width, flippedY + height, mask, gl.NEAREST );
+
+				state.bindFramebuffer( gl.READ_FRAMEBUFFER, fb );
+
+				state.bindTexture( gl.TEXTURE_2D, textureGPU );
+
+				gl.copyTexSubImage2D( gl.TEXTURE_2D, 0, 0, 0, x, flippedY, width, height );
+
+				state.unbindTexture();
+
+			} else {
+
+				const fb = gl.createFramebuffer();
+
+				state.bindFramebuffer( gl.DRAW_FRAMEBUFFER, fb );
+
+				gl.framebufferTexture2D( gl.DRAW_FRAMEBUFFER, attachment, gl.TEXTURE_2D, textureGPU, 0 );
+				gl.blitFramebuffer( 0, 0, width, height, 0, 0, width, height, mask, gl.NEAREST );
+
+				gl.deleteFramebuffer( fb );
+
+			}
 
 		} else {
 
 			state.bindTexture( gl.TEXTURE_2D, textureGPU );
-			gl.copyTexSubImage2D( gl.TEXTURE_2D, 0, 0, 0, 0, 0, width, height );
+			gl.copyTexSubImage2D( gl.TEXTURE_2D, 0, 0, 0, x, srcHeight - height - y, width, height );
 
 			state.unbindTexture();
 
@@ -806,7 +834,7 @@ class WebGLTextureUtils {
 
 	}
 
-	async copyTextureToBuffer( texture, x, y, width, height ) {
+	async copyTextureToBuffer( texture, x, y, width, height, faceIndex ) {
 
 		const { backend, gl } = this;
 
@@ -815,10 +843,13 @@ class WebGLTextureUtils {
 		const fb = gl.createFramebuffer();
 
 		gl.bindFramebuffer( gl.READ_FRAMEBUFFER, fb );
-		gl.framebufferTexture2D( gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, textureGPU, 0 );
+
+		const target = texture.isCubeTexture ? gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex : gl.TEXTURE_2D;
+
+		gl.framebufferTexture2D( gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, target, textureGPU, 0 );
 
 		const typedArrayType = this._getTypedArrayType( glType );
-		const bytesPerTexel = this._getBytesPerTexel( glFormat );
+		const bytesPerTexel = this._getBytesPerTexel( glType, glFormat );
 
 		const elementCount = width * height;
 		const byteLength = elementCount * bytesPerTexel;
@@ -856,19 +887,33 @@ class WebGLTextureUtils {
 		if ( glType === gl.UNSIGNED_SHORT ) return Uint16Array;
 		if ( glType === gl.UNSIGNED_INT ) return Uint32Array;
 
+		if ( glType === gl.HALF_FLOAT ) return Uint16Array;
 		if ( glType === gl.FLOAT ) return Float32Array;
 
 		throw new Error( `Unsupported WebGL type: ${glType}` );
 
 	}
 
-	_getBytesPerTexel( glFormat ) {
+	_getBytesPerTexel( glType, glFormat ) {
 
 		const { gl } = this;
 
-		if ( glFormat === gl.RGBA ) return 4;
-		if ( glFormat === gl.RGB ) return 3;
-		if ( glFormat === gl.ALPHA ) return 1;
+		let bytesPerComponent = 0;
+
+		if ( glType === gl.UNSIGNED_BYTE ) bytesPerComponent = 1;
+
+		if ( glType === gl.UNSIGNED_SHORT_4_4_4_4 ||
+			glType === gl.UNSIGNED_SHORT_5_5_5_1 ||
+			glType === gl.UNSIGNED_SHORT_5_6_5 ||
+			glType === gl.UNSIGNED_SHORT ||
+			glType === gl.HALF_FLOAT ) bytesPerComponent = 2;
+
+		if ( glType === gl.UNSIGNED_INT ||
+			glType === gl.FLOAT ) bytesPerComponent = 4;
+
+		if ( glFormat === gl.RGBA ) return bytesPerComponent * 4;
+		if ( glFormat === gl.RGB ) return bytesPerComponent * 3;
+		if ( glFormat === gl.ALPHA ) return bytesPerComponent;
 
 	}
 

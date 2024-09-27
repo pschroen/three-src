@@ -1,4 +1,4 @@
-import Node, { registerNode } from '../core/Node.js';
+import Node from '../core/Node.js';
 import { NodeUpdateType } from '../core/constants.js';
 import { uniform } from '../core/UniformNode.js';
 import { texture } from './TextureNode.js';
@@ -9,6 +9,12 @@ import { uniformArray } from './UniformArrayNode.js';
 import ArrayElementNode from '../utils/ArrayElementNode.js';
 
 class ReferenceElementNode extends ArrayElementNode {
+
+	static get type() {
+
+		return 'ReferenceElementNode';
+
+	}
 
 	constructor( referenceNode, indexNode ) {
 
@@ -41,6 +47,12 @@ class ReferenceElementNode extends ArrayElementNode {
 // TODO: Extends this from ReferenceBaseNode
 class ReferenceNode extends Node {
 
+	static get type() {
+
+		return 'ReferenceNode';
+
+	}
+
 	constructor( property, uniformType, object = null, count = null ) {
 
 		super();
@@ -53,6 +65,8 @@ class ReferenceNode extends Node {
 		this.properties = property.split( '.' );
 		this.reference = object;
 		this.node = null;
+		this.group = null;
+		this.name = null;
 
 		this.updateType = NodeUpdateType.OBJECT;
 
@@ -61,6 +75,22 @@ class ReferenceNode extends Node {
 	element( indexNode ) {
 
 		return nodeObject( new ReferenceElementNode( this, nodeObject( indexNode ) ) );
+
+	}
+
+	setGroup( group ) {
+
+		this.group = group;
+
+		return this;
+
+	}
+
+	label( name ) {
+
+		this.name = name;
+
+		return this;
 
 	}
 
@@ -90,6 +120,14 @@ class ReferenceNode extends Node {
 
 		}
 
+		if ( this.group !== null ) {
+
+			node.setGroup( this.group );
+
+		}
+
+		if ( this.name !== null ) node.label( this.name );
+
 		this.node = node.getSelf();
 
 	}
@@ -98,6 +136,7 @@ class ReferenceNode extends Node {
 
 		if ( this.node === null ) {
 
+			this.updateReference( builder );
 			this.updateValue();
 
 		}
@@ -165,8 +204,6 @@ class ReferenceNode extends Node {
 }
 
 export default ReferenceNode;
-
-ReferenceNode.type = registerNode( 'Reference', ReferenceNode );
 
 export const reference = ( name, type, object ) => nodeObject( new ReferenceNode( name, type, object ) );
 export const referenceBuffer = ( name, type, count, object ) => nodeObject( new ReferenceNode( name, type, object, count ) );

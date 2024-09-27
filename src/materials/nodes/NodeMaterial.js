@@ -22,10 +22,15 @@ import IrradianceNode from '../../nodes/lighting/IrradianceNode.js';
 import { depth } from '../../nodes/display/ViewportDepthNode.js';
 import { cameraLogDepth } from '../../nodes/accessors/Camera.js';
 import { clipping, clippingAlpha } from '../../nodes/accessors/ClippingNode.js';
-
-const NodeMaterials = new Map();
+import NodeMaterialObserver from './manager/NodeMaterialObserver.js';
 
 class NodeMaterial extends Material {
+
+	static get type() {
+
+		return 'NodeMaterial';
+
+	}
 
 	constructor() {
 
@@ -74,6 +79,12 @@ class NodeMaterial extends Material {
 	build( builder ) {
 
 		this.setup( builder );
+
+	}
+
+	setupObserver( builder ) {
+
+		return new NodeMaterialObserver( builder );
 
 	}
 
@@ -167,6 +178,10 @@ class NodeMaterial extends Material {
 
 		builder.addFlow( 'fragment', builder.removeStack() );
 
+		// < MONITOR >
+
+		builder.monitor = this.setupObserver( builder );
+
 	}
 
 	setupClipping( builder ) {
@@ -179,7 +194,9 @@ class NodeMaterial extends Material {
 
 		if ( globalClippingCount || localClippingCount ) {
 
-			if ( this.alphaToCoverage ) {
+			const samples = builder.renderer.samples;
+
+			if ( this.alphaToCoverage && samples > 1 ) {
 
 				// to be added to flow when the color/alpha value has been determined
 				result = clippingAlpha();
@@ -623,45 +640,3 @@ class NodeMaterial extends Material {
 }
 
 export default NodeMaterial;
-
-NodeMaterial.type = registerNodeMaterial( '', NodeMaterial );
-
-export function registerNodeMaterial( type, nodeMaterialClass ) {
-
-	const suffix = 'NodeMaterial';
-	const nodeMaterialType = type + suffix;
-
-	if ( typeof nodeMaterialClass !== 'function' ) throw new Error( `THREE.Node: NodeMaterial class "${ type }" is not a class.` );
-
-	if ( NodeMaterials.has( nodeMaterialType ) ) {
-
-		console.warn( `THREE.Node: Redefinition of NodeMaterial class "${ nodeMaterialType }".` );
-		return;
-
-	}
-
-	if ( type.slice( - suffix.length ) === suffix ) {
-
-		console.warn( `THREE.NodeMaterial: NodeMaterial class ${ nodeMaterialType } should not have '${ suffix }' suffix.` );
-		return;
-
-	}
-
-	NodeMaterials.set( nodeMaterialType, nodeMaterialClass );
-	nodeMaterialClass.type = nodeMaterialType;
-
-	return nodeMaterialType;
-
-}
-
-export function createNodeMaterialFromType( type ) {
-
-	const Material = NodeMaterials.get( type );
-
-	if ( Material !== undefined ) {
-
-		return new Material();
-
-	}
-
-}

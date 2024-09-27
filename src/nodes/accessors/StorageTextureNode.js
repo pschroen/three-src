@@ -1,9 +1,14 @@
-import { registerNode } from '../core/Node.js';
 import TextureNode from './TextureNode.js';
 import { nodeProxy } from '../tsl/TSLBase.js';
 import { GPUStorageTextureAccess } from '../../renderers/webgpu/utils/WebGPUConstants.js';
 
 class StorageTextureNode extends TextureNode {
+
+	static get type() {
+
+		return 'StorageTextureNode';
+
+	}
 
 	constructor( value, uvNode, storeNode = null ) {
 
@@ -81,15 +86,13 @@ class StorageTextureNode extends TextureNode {
 
 		const snippet = builder.generateTextureStore( builder, textureProperty, uvSnippet, storeSnippet );
 
-		builder.addLineFlowCode( snippet );
+		builder.addLineFlowCode( snippet, this );
 
 	}
 
 }
 
 export default StorageTextureNode;
-
-StorageTextureNode.type = registerNode( 'StorageTexture', StorageTextureNode );
 
 export const storageTexture = nodeProxy( StorageTextureNode );
 

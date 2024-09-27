@@ -1,7 +1,13 @@
-import Node, { registerNode } from './Node.js';
+import Node from './Node.js';
 import { addMethodChaining, nodeProxy } from '../tsl/TSLCore.js';
 
 class VarNode extends Node {
+
+	static get type() {
+
+		return 'VarNode';
+
+	}
 
 	constructor( node, name = null ) {
 
@@ -38,7 +44,7 @@ class VarNode extends Node {
 
 		const snippet = node.build( builder, nodeVar.type );
 
-		builder.addLineFlowCode( `${propertyName} = ${snippet}` );
+		builder.addLineFlowCode( `${propertyName} = ${snippet}`, this );
 
 		return propertyName;
 
@@ -47,8 +53,6 @@ class VarNode extends Node {
 }
 
 export default VarNode;
-
-VarNode.type = registerNode( 'Var', VarNode );
 
 export const temp = nodeProxy( VarNode );
 

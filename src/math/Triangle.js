@@ -1,4 +1,5 @@
 import { Vector3 } from './Vector3.js';
+import { Vector4 } from './Vector4.js';
 
 const _v0 = new Vector3();
 const _v1 = new Vector3();
@@ -11,6 +12,10 @@ const _vbc = new Vector3();
 const _vap = new Vector3();
 const _vbp = new Vector3();
 const _vcp = new Vector3();
+
+const _v40 = new Vector4();
+const _v41 = new Vector4();
+const _v42 = new Vector4();
 
 class Triangle {
 
@@ -101,6 +106,25 @@ class Triangle {
 		target.addScaledVector( v1, _v3.x );
 		target.addScaledVector( v2, _v3.y );
 		target.addScaledVector( v3, _v3.z );
+
+		return target;
+
+	}
+
+	static getInterpolatedAttribute( attr, i1, i2, i3, barycoord, target ) {
+
+		_v40.setScalar( 0 );
+		_v41.setScalar( 0 );
+		_v42.setScalar( 0 );
+
+		_v40.fromBufferAttribute( attr, i1 );
+		_v41.fromBufferAttribute( attr, i2 );
+		_v42.fromBufferAttribute( attr, i3 );
+
+		target.setScalar( 0 );
+		target.addScaledVector( _v40, barycoord.x );
+		target.addScaledVector( _v41, barycoord.y );
+		target.addScaledVector( _v42, barycoord.z );
 
 		return target;
 

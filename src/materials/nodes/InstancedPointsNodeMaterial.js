@@ -1,20 +1,25 @@
-import NodeMaterial, { registerNodeMaterial } from './NodeMaterial.js';
-import { property } from '../../nodes/core/PropertyNode.js';
+import NodeMaterial from './NodeMaterial.js';
 import { attribute } from '../../nodes/core/AttributeNode.js';
 import { cameraProjectionMatrix } from '../../nodes/accessors/Camera.js';
 import { materialColor, materialOpacity, materialPointWidth } from '../../nodes/accessors/MaterialNode.js'; // or should this be a property, instead?
 import { modelViewMatrix } from '../../nodes/accessors/ModelNode.js';
 import { positionGeometry } from '../../nodes/accessors/Position.js';
-import { smoothstep } from '../../nodes/math/MathNode.js';
-import { Fn, varying, vec2, vec4 } from '../../nodes/tsl/TSLBase.js';
+import { smoothstep, lengthSq } from '../../nodes/math/MathNode.js';
+import { Fn, vec4, float } from '../../nodes/tsl/TSLBase.js';
 import { uv } from '../../nodes/accessors/UV.js';
-import { viewport } from '../../nodes/display/ViewportNode.js';
+import { viewport } from '../../nodes/display/ScreenNode.js';
 
 import { PointsMaterial } from '../PointsMaterial.js';
 
 const _defaultValues = new PointsMaterial();
 
 class InstancedPointsNodeMaterial extends NodeMaterial {
+
+	static get type() {
+
+		return 'InstancedPointsNodeMaterial';
+
+	}
 
 	constructor( params = {} ) {
 
@@ -34,35 +39,29 @@ class InstancedPointsNodeMaterial extends NodeMaterial {
 
 		this.setDefaultValues( _defaultValues );
 
-		this.setupShaders();
-
 		this.setValues( params );
 
 	}
 
 	setup( builder ) {
 
-		this.setupShaders();
+		this.setupShaders( builder );
 
 		super.setup( builder );
 
 	}
 
-	setupShaders() {
+	setupShaders( { renderer } ) {
 
 		const useAlphaToCoverage = this.alphaToCoverage;
 		const useColor = this.useColor;
 
 		this.vertexNode = Fn( () => {
 
-			//vUv = uv;
-			varying( vec2(), 'vUv' ).assign( uv() ); // @TODO: Analyze other way to do this
-
 			const instancePosition = attribute( 'instancePosition' ).xyz;
 
 			// camera space
-			const mvPos = property( 'vec4', 'mvPos' );
-			mvPos.assign( modelViewMatrix.mul( vec4( instancePosition, 1.0 ) ) );
+			const mvPos = vec4( modelViewMatrix.mul( vec4( instancePosition, 1.0 ) ) );
 
 			const aspect = viewport.z.div( viewport.w );
 
@@ -70,8 +69,7 @@ class InstancedPointsNodeMaterial extends NodeMaterial {
 			const clipPos = cameraProjectionMatrix.mul( mvPos );
 
 			// offset in ndc space
-			const offset = property( 'vec2', 'offset' );
-			offset.assign( positionGeometry.xy );
+			const offset = positionGeometry.xy.toVar();
 
 			offset.mulAssign( this.pointWidthNode ? this.pointWidthNode : materialPointWidth );
 
@@ -82,32 +80,21 @@ class InstancedPointsNodeMaterial extends NodeMaterial {
 			offset.assign( offset.mul( clipPos.w ) );
 
 			//clipPos.xy += offset;
-			clipPos.assign( clipPos.add( vec4( offset, 0, 0 ) ) );
+			clipPos.addAssign( vec4( offset, 0, 0 ) );
 
 			return clipPos;
-
-			//vec4 mvPosition = mvPos; // this was used for somethihng...
 
 		} )();
 
 		this.fragmentNode = Fn( () => {
 
-			const vUv = varying( vec2(), 'vUv' );
+			const alpha = float( 1 ).toVar();
 
-			// force assignment into correct place in flow
-			const alpha = property( 'float', 'alpha' );
-			alpha.assign( 1 );
+			const len2 = lengthSq( uv().mul( 2 ).sub( 1 ) );
 
-			const a = vUv.x;
-			const b = vUv.y;
+			if ( useAlphaToCoverage && renderer.samples > 1 ) {
 
-			const len2 = a.mul( a ).add( b.mul( b ) );
-
-			if ( useAlphaToCoverage ) {
-
-				// force assignment out of following 'if' statement - to avoid uniform control flow errors
-				const dlen = property( 'float', 'dlen' );
-				dlen.assign( len2.fwidth() );
+				const dlen = float( len2.fwidth() ).toVar();
 
 				alpha.assign( smoothstep( dlen.oneMinus(), dlen.add( 1 ), len2 ).oneMinus() );
 
@@ -167,5 +154,3 @@ class InstancedPointsNodeMaterial extends NodeMaterial {
 }
 
 export default InstancedPointsNodeMaterial;
-
-InstancedPointsNodeMaterial.type = registerNodeMaterial( 'InstancedPoints', InstancedPointsNodeMaterial );

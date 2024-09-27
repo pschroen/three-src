@@ -1,7 +1,13 @@
-import Node, { registerNode } from './Node.js';
+import Node from './Node.js';
 import { nodeImmutable, varying } from '../tsl/TSLBase.js';
 
 class IndexNode extends Node {
+
+	static get type() {
+
+		return 'IndexNode';
+
+	}
 
 	constructor( scope ) {
 
@@ -22,19 +28,33 @@ class IndexNode extends Node {
 
 		if ( scope === IndexNode.VERTEX ) {
 
+			// The index of a vertex within a mesh.
 			propertyName = builder.getVertexIndex();
 
 		} else if ( scope === IndexNode.INSTANCE ) {
 
+			// The index of either a mesh instance or an invocation of a compute shader.
 			propertyName = builder.getInstanceIndex();
 
 		} else if ( scope === IndexNode.DRAW ) {
 
+			// The index of a draw call.
 			propertyName = builder.getDrawIndex();
 
 		} else if ( scope === IndexNode.INVOCATION_LOCAL ) {
 
+			// The index of a compute invocation within the scope of a workgroup load.
 			propertyName = builder.getInvocationLocalIndex();
+
+		} else if ( scope === IndexNode.INVOCATION_SUBGROUP ) {
+
+			// The index of a compute invocation within the scope of a subgroup.
+			propertyName = builder.getInvocationSubgroupIndex();
+
+		} else if ( scope === IndexNode.SUBGROUP ) {
+
+			// The index of the subgroup the current compute invocation belongs to.
+			propertyName = builder.getSubgroupIndex();
 
 		} else {
 
@@ -64,14 +84,16 @@ class IndexNode extends Node {
 
 IndexNode.VERTEX = 'vertex';
 IndexNode.INSTANCE = 'instance';
+IndexNode.SUBGROUP = 'subgroup';
 IndexNode.INVOCATION_LOCAL = 'invocationLocal';
+IndexNode.INVOCATION_SUBGROUP = 'invocationSubgroup';
 IndexNode.DRAW = 'draw';
 
 export default IndexNode;
 
-IndexNode.type = registerNode( 'Index', IndexNode );
-
 export const vertexIndex = nodeImmutable( IndexNode, IndexNode.VERTEX );
 export const instanceIndex = nodeImmutable( IndexNode, IndexNode.INSTANCE );
+export const subgroupIndex = nodeImmutable( IndexNode, IndexNode.SUBGROUP );
+export const invocationSubgroupIndex = nodeImmutable( IndexNode, IndexNode.INVOCATION_SUBGROUP );
 export const invocationLocalIndex = nodeImmutable( IndexNode, IndexNode.INVOCATION_LOCAL );
 export const drawIndex = nodeImmutable( IndexNode, IndexNode.DRAW );

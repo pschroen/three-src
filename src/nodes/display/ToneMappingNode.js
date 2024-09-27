@@ -1,11 +1,17 @@
-import { registerNode } from '../core/Node.js';
 import TempNode from '../core/TempNode.js';
 import { addMethodChaining, nodeObject, vec4 } from '../tsl/TSLCore.js';
 import { rendererReference } from '../accessors/RendererReferenceNode.js';
 
 import { NoToneMapping } from '../../constants.js';
+import { hash } from '../core/NodeUtils.js';
 
 class ToneMappingNode extends TempNode {
+
+	static get type() {
+
+		return 'ToneMappingNode';
+
+	}
 
 	constructor( toneMapping, exposureNode = toneMappingExposure, colorNode = null ) {
 
@@ -20,10 +26,7 @@ class ToneMappingNode extends TempNode {
 
 	getCacheKey() {
 
-		let cacheKey = super.getCacheKey();
-		cacheKey = '{toneMapping:' + this.toneMapping + ',nodes:' + cacheKey + '}';
-
-		return cacheKey;
+		return hash( super.getCacheKey(), this.toneMapping );
 
 	}
 
@@ -57,8 +60,6 @@ class ToneMappingNode extends TempNode {
 }
 
 export default ToneMappingNode;
-
-ToneMappingNode.type = registerNode( 'ToneMapping', ToneMappingNode );
 
 export const toneMapping = ( mapping, exposure, color ) => nodeObject( new ToneMappingNode( mapping, nodeObject( exposure ), nodeObject( color ) ) );
 export const toneMappingExposure = rendererReference( 'toneMappingExposure', 'float' );

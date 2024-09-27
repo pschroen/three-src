@@ -10,7 +10,7 @@ export { default as ConstNode } from './core/ConstNode.js';
 export { default as ContextNode } from './core/ContextNode.js';
 export { default as IndexNode } from './core/IndexNode.js';
 export { default as LightingModel } from './core/LightingModel.js';
-export { default as Node, registerNode } from './core/Node.js';
+export { default as Node } from './core/Node.js';
 export { default as VarNode } from './core/VarNode.js';
 export { default as NodeAttribute } from './core/NodeAttribute.js';
 export { default as NodeBuilder } from './core/NodeBuilder.js';
@@ -88,7 +88,7 @@ export { default as FrontFacingNode } from './display/FrontFacingNode.js';
 export { default as NormalMapNode } from './display/NormalMapNode.js';
 export { default as PosterizeNode } from './display/PosterizeNode.js';
 export { default as ToneMappingNode } from './display/ToneMappingNode.js';
-export { default as ViewportNode } from './display/ViewportNode.js';
+export { default as ScreenNode } from './display/ScreenNode.js';
 export { default as ViewportTextureNode } from './display/ViewportTextureNode.js';
 export { default as ViewportSharedTextureNode } from './display/ViewportSharedTextureNode.js';
 export { default as ViewportDepthTextureNode } from './display/ViewportDepthTextureNode.js';
@@ -114,6 +114,7 @@ export { default as StereoPassNode } from './display/StereoPassNode.js';
 export { default as AnaglyphPassNode } from './display/AnaglyphPassNode.js';
 export { default as ParallaxBarrierPassNode } from './display/ParallaxBarrierPassNode.js';
 export { default as PassNode } from './display/PassNode.js';
+export { default as ToonOutlinePassNode } from './display/ToonOutlinePassNode.js';
 
 // code
 export { default as ExpressionNode } from './code/ExpressionNode.js';
@@ -135,7 +136,6 @@ export { default as RangeNode } from './geometry/RangeNode.js';
 export { default as ComputeNode } from './gpgpu/ComputeNode.js';
 
 // lighting
-export { default as LightNode } from './lighting/LightNode.js';
 export { default as PointLightNode } from './lighting/PointLightNode.js';
 export { default as DirectionalLightNode } from './lighting/DirectionalLightNode.js';
 export { default as RectAreaLightNode } from './lighting/RectAreaLightNode.js';

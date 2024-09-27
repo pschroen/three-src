@@ -1,8 +1,13 @@
-import { registerNode } from '../core/Node.js';
 import TempNode from '../core/TempNode.js';
 import { vectorComponents } from '../core/constants.js';
 
 class FlipNode extends TempNode {
+
+	static get type() {
+
+		return 'FlipNode';
+
+	}
 
 	constructor( sourceNode, components ) {
 
@@ -29,7 +34,7 @@ class FlipNode extends TempNode {
 		const sourceCache = builder.getVarFromNode( this );
 		const sourceProperty = builder.getPropertyName( sourceCache );
 
-		builder.addLineFlowCode( sourceProperty + ' = ' + sourceSnippet );
+		builder.addLineFlowCode( sourceProperty + ' = ' + sourceSnippet, this );
 
 		const length = builder.getTypeLength( sourceType );
 		const snippetValues = [];
@@ -61,5 +66,3 @@ class FlipNode extends TempNode {
 }
 
 export default FlipNode;
-
-FlipNode.type = registerNode( 'Flip', FlipNode );

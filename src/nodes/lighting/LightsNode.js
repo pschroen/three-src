@@ -1,4 +1,4 @@
-import Node, { registerNode } from '../core/Node.js';
+import Node from '../core/Node.js';
 import { nodeObject, nodeProxy, vec3 } from '../tsl/TSLBase.js';
 
 const sortLights = ( lights ) => {
@@ -23,7 +23,15 @@ const getLightNodeById = ( id, lightNodes ) => {
 
 };
 
+const _lightsNodeRef = new WeakMap();
+
 class LightsNode extends Node {
+
+	static get type() {
+
+		return 'LightsNode';
+
+	}
 
 	constructor( lights = [] ) {
 
@@ -106,14 +114,27 @@ class LightsNode extends Node {
 
 					const lightNodeClass = nodeLibrary.getLightNodeClass( light.constructor );
 
-					if ( lightNodeClass === undefined ) {
+					if ( lightNodeClass === null ) {
 
 						console.warn( `LightsNode.setupNodeLights: Light node not found for ${ light.constructor.name }` );
 						continue;
 
 					}
 
-					lightNodes.push( nodeObject( new lightNodeClass( light ) ) );
+					let lightNode = null;
+
+					if ( ! _lightsNodeRef.has( light ) ) {
+
+						lightNode = new lightNodeClass( light );
+						_lightsNodeRef.set( light, lightNode );
+
+					} else {
+
+						lightNode = _lightsNodeRef.get( light );
+
+					}
+
+					lightNodes.push( lightNode );
 
 				}
 
@@ -225,7 +246,5 @@ class LightsNode extends Node {
 }
 
 export default LightsNode;
-
-LightsNode.type = registerNode( 'Lights', LightsNode );
 
 export const lights = nodeProxy( LightsNode );

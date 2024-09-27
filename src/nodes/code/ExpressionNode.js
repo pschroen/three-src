@@ -1,7 +1,13 @@
-import Node, { registerNode } from '../core/Node.js';
+import Node from '../core/Node.js';
 import { nodeProxy } from '../tsl/TSLCore.js';
 
 class ExpressionNode extends Node {
+
+	static get type() {
+
+		return 'ExpressionNode';
+
+	}
 
 	constructor( snippet = '', nodeType = 'void' ) {
 
@@ -18,7 +24,7 @@ class ExpressionNode extends Node {
 
 		if ( type === 'void' ) {
 
-			builder.addLineFlowCode( snippet );
+			builder.addLineFlowCode( snippet, this );
 
 		} else {
 
@@ -31,7 +37,5 @@ class ExpressionNode extends Node {
 }
 
 export default ExpressionNode;
-
-ExpressionNode.type = registerNode( 'Expression', ExpressionNode );
 
 export const expression = nodeProxy( ExpressionNode );

@@ -1,8 +1,14 @@
-import Node, { registerNode } from './Node.js';
+import Node from './Node.js';
 import StructTypeNode from './StructTypeNode.js';
 import { nodeProxy } from '../tsl/TSLBase.js';
 
 class OutputStructNode extends Node {
+
+	static get type() {
+
+		return 'OutputStructNode';
+
+	}
 
 	constructor( ...members ) {
 
@@ -42,7 +48,7 @@ class OutputStructNode extends Node {
 
 			const snippet = members[ i ].build( builder, output );
 
-			builder.addLineFlowCode( `${ structPrefix }m${ i } = ${ snippet }` );
+			builder.addLineFlowCode( `${ structPrefix }m${ i } = ${ snippet }`, this );
 
 		}
 
@@ -53,7 +59,5 @@ class OutputStructNode extends Node {
 }
 
 export default OutputStructNode;
-
-OutputStructNode.type = registerNode( 'OutputStruct', OutputStructNode );
 
 export const outputStruct = nodeProxy( OutputStructNode );

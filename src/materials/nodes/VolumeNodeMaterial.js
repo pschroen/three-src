@@ -1,15 +1,21 @@
-import NodeMaterial, { registerNodeMaterial } from './NodeMaterial.js';
+import NodeMaterial from './NodeMaterial.js';
 import { property } from '../../nodes/core/PropertyNode.js';
 import { materialReference } from '../../nodes/accessors/MaterialReferenceNode.js';
 import { modelWorldMatrixInverse } from '../../nodes/accessors/ModelNode.js';
 import { cameraPosition } from '../../nodes/accessors/Camera.js';
 import { positionGeometry } from '../../nodes/accessors/Position.js';
-import { Fn, varying, vec2, vec3, vec4 } from '../../nodes/tsl/TSLBase.js';
+import { Fn, varying, float, vec2, vec3, vec4 } from '../../nodes/tsl/TSLBase.js';
 import { min, max } from '../../nodes/math/MathNode.js';
 import { Loop, Break } from '../../nodes/utils/LoopNode.js';
 import { texture3D } from '../../nodes/accessors/Texture3DNode.js';
 
 class VolumeNodeMaterial extends NodeMaterial {
+
+	static get type() {
+
+		return 'VolumeNodeMaterial';
+
+	}
 
 	constructor( params = {} ) {
 
@@ -53,19 +59,19 @@ class VolumeNodeMaterial extends NodeMaterial {
 			const vDirection = varying( positionGeometry.sub( vOrigin ) );
 
 			const rayDir = vDirection.normalize();
-			const bounds = property( 'vec2', 'bounds' ).assign( hitBox( { orig: vOrigin, dir: rayDir } ) );
+			const bounds = vec2( hitBox( { orig: vOrigin, dir: rayDir } ) ).toVar();
 
 			bounds.x.greaterThan( bounds.y ).discard();
 
 			bounds.assign( vec2( max( bounds.x, 0.0 ), bounds.y ) );
 
-			const p = property( 'vec3', 'p' ).assign( vOrigin.add( bounds.x.mul( rayDir ) ) );
-			const inc = property( 'vec3', 'inc' ).assign( vec3( rayDir.abs().reciprocal() ) );
-			const delta = property( 'float', 'delta' ).assign( min( inc.x, min( inc.y, inc.z ) ) );
+			const p = vec3( vOrigin.add( bounds.x.mul( rayDir ) ) ).toVar();
+			const inc = vec3( rayDir.abs().reciprocal() ).toVar();
+			const delta = float( min( inc.x, min( inc.y, inc.z ) ) ).toVar( 'delta' ); // used 'delta' name in loop
 
 			delta.divAssign( materialReference( 'steps', 'float' ) );
 
-			const ac = property( 'vec4', 'ac' ).assign( vec4( materialReference( 'base', 'color' ), 0.0 ) );
+			const ac = vec4( materialReference( 'base', 'color' ), 0.0 ).toVar();
 
 			Loop( { type: 'float', start: bounds.x, end: bounds.y, update: '+= delta' }, () => {
 
@@ -100,5 +106,3 @@ class VolumeNodeMaterial extends NodeMaterial {
 }
 
 export default VolumeNodeMaterial;
-
-VolumeNodeMaterial.type = registerNodeMaterial( 'Volume', VolumeNodeMaterial );

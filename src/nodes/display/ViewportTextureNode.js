@@ -1,8 +1,7 @@
-import { registerNode } from '../core/Node.js';
 import TextureNode from '../accessors/TextureNode.js';
 import { NodeUpdateType } from '../core/constants.js';
 import { nodeProxy } from '../tsl/TSLBase.js';
-import { viewportUV } from './ViewportNode.js';
+import { screenUV } from './ScreenNode.js';
 
 import { Vector2 } from '../../math/Vector2.js';
 import { FramebufferTexture } from '../../textures/FramebufferTexture.js';
@@ -12,7 +11,13 @@ const _size = new Vector2();
 
 class ViewportTextureNode extends TextureNode {
 
-	constructor( uvNode = viewportUV, levelNode = null, framebufferTexture = null ) {
+	static get type() {
+
+		return 'ViewportTextureNode';
+
+	}
+
+	constructor( uvNode = screenUV, levelNode = null, framebufferTexture = null ) {
 
 		if ( framebufferTexture === null ) {
 
@@ -71,8 +76,6 @@ class ViewportTextureNode extends TextureNode {
 }
 
 export default ViewportTextureNode;
-
-ViewportTextureNode.type = registerNode( 'ViewportTexture', ViewportTextureNode );
 
 export const viewportTexture = nodeProxy( ViewportTextureNode );
 export const viewportMipTexture = nodeProxy( ViewportTextureNode, null, null, { generateMipmaps: true } );

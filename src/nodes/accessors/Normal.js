@@ -1,7 +1,7 @@
 import { attribute } from '../core/AttributeNode.js';
 import { cameraViewMatrix } from './Camera.js';
-import { modelNormalMatrix } from './ModelNode.js';
-import { vec3 } from '../tsl/TSLBase.js';
+import { modelNormalMatrix, modelWorldMatrix } from './ModelNode.js';
+import { mat3, vec3 } from '../tsl/TSLBase.js';
 import { positionView } from './Position.js';
 import { Fn, varying } from '../tsl/TSLBase.js';
 import { faceDirection } from '../display/FrontFacingNode.js';
@@ -24,8 +24,6 @@ export const normalLocal = ( Fn( ( builder ) => {
 
 export const normalFlat = positionView.dFdx().cross( positionView.dFdy() ).normalize().toVar( 'normalFlat' );
 
-let normalViewVarying = null;
-
 export const normalView = ( Fn( ( builder ) => {
 
 	let node;
@@ -36,7 +34,7 @@ export const normalView = ( Fn( ( builder ) => {
 
 	} else {
 
-		node = normalViewVarying || ( normalViewVarying = varying( modelNormalMatrix.mul( normalLocal ), 'v_normalView' ).normalize() );
+		node = varying( transformNormalToView( normalLocal ), 'v_normalView' ).normalize();
 
 	}
 
@@ -53,10 +51,38 @@ export const transformedNormalView = ( Fn( ( builder ) => {
 }, 'vec3' ).once() )().mul( faceDirection ).toVar( 'transformedNormalView' );
 
 
-export const transformedNormalWorld = transformedNormalView.transformDirection( cameraViewMatrix ).normalize().toVar( 'transformedNormalWorld' );
+export const transformedNormalWorld = transformedNormalView.transformDirection( cameraViewMatrix ).toVar( 'transformedNormalWorld' );
 
 export const transformedClearcoatNormalView = ( Fn( ( builder ) => {
 
 	return builder.context.setupClearcoatNormal();
 
 }, 'vec3' ).once() )().mul( faceDirection ).toVar( 'transformedClearcoatNormalView' );
+
+export const transformNormal = Fn( ( [ normal, matrix = modelWorldMatrix ] ) => {
+
+	const m = mat3( matrix );
+
+	const transformedNormal = normal.div( vec3( m[ 0 ].dot( m[ 0 ] ), m[ 1 ].dot( m[ 1 ] ), m[ 2 ].dot( m[ 2 ] ) ) );
+
+	return m.mul( transformedNormal ).xyz;
+
+} );
+
+export const transformNormalToView = Fn( ( [ normal ], builder ) => {
+
+	const modelNormalViewMatrix = builder.renderer.nodes.modelNormalViewMatrix;
+
+	if ( modelNormalViewMatrix !== null ) {
+
+		return modelNormalViewMatrix.transformDirection( normal );
+
+	}
+
+	//
+
+	const transformedNormal = modelNormalMatrix.mul( normal );
+
+	return cameraViewMatrix.transformDirection( transformedNormal );
+
+} );

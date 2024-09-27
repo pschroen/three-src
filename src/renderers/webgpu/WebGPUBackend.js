@@ -425,7 +425,7 @@ class WebGPUBackend extends Backend {
 		renderContextData.descriptor = descriptor;
 		renderContextData.encoder = encoder;
 		renderContextData.currentPass = currentPass;
-		renderContextData.currentSets = { attributes: {}, pipeline: null, index: null };
+		renderContextData.currentSets = { attributes: {}, bindingGroups: [], pipeline: null, index: null };
 		renderContextData.renderBundles = [];
 
 		//
@@ -829,12 +829,16 @@ class WebGPUBackend extends Backend {
 
 	draw( renderObject, info ) {
 
-		const { object, geometry, context, pipeline } = renderObject;
+		const { object, context, pipeline } = renderObject;
 		const bindings = renderObject.getBindings();
 		const renderContextData = this.get( context );
 		const pipelineGPU = this.get( pipeline ).pipeline;
 		const currentSets = renderContextData.currentSets;
 		const passEncoderGPU = renderContextData.currentPass;
+
+		const drawParms = renderObject.getDrawParameters();
+
+		if ( drawParms === null ) return;
 
 		// pipeline
 
@@ -848,12 +852,19 @@ class WebGPUBackend extends Backend {
 
 		// bind groups
 
+		const currentBindingGroups = currentSets.bindingGroups;
+
 		for ( let i = 0, l = bindings.length; i < l; i ++ ) {
 
 			const bindGroup = bindings[ i ];
 			const bindingsData = this.get( bindGroup );
 
-			passEncoderGPU.setBindGroup( bindGroup.index, bindingsData.group );
+			if ( currentBindingGroups[ bindGroup.index ] !== bindGroup.id ) {
+
+				passEncoderGPU.setBindGroup( bindGroup.index, bindingsData.group );
+				currentBindingGroups[ bindGroup.index ] = bindGroup.id;
+
+			}
 
 		}
 
@@ -929,12 +940,6 @@ class WebGPUBackend extends Backend {
 
 		// draw
 
-		const drawRange = renderObject.drawRange;
-		const firstVertex = drawRange.start;
-
-		const instanceCount = this.getInstanceCount( renderObject );
-		if ( instanceCount === 0 ) return;
-
 		if ( object.isBatchedMesh === true ) {
 
 			const starts = object._multiDrawStarts;
@@ -955,16 +960,15 @@ class WebGPUBackend extends Backend {
 
 		} else if ( hasIndex === true ) {
 
-			const indexCount = ( drawRange.count !== Infinity ) ? drawRange.count : index.count;
+			const { vertexCount: indexCount, instanceCount, firstVertex: firstIndex } = drawParms;
 
-			passEncoderGPU.drawIndexed( indexCount, instanceCount, firstVertex, 0, 0 );
+			passEncoderGPU.drawIndexed( indexCount, instanceCount, firstIndex, 0, 0 );
 
 			info.update( object, indexCount, instanceCount );
 
 		} else {
 
-			const positionAttribute = geometry.attributes.position;
-			const vertexCount = ( drawRange.count !== Infinity ) ? drawRange.count : positionAttribute.count;
+			const { vertexCount, instanceCount, firstVertex } = drawParms;
 
 			passEncoderGPU.draw( vertexCount, instanceCount, firstVertex, 0 );
 
@@ -1057,7 +1061,6 @@ class WebGPUBackend extends Backend {
 
 	}
 
-
 	// textures
 
 	createSampler( texture ) {
@@ -1102,9 +1105,9 @@ class WebGPUBackend extends Backend {
 
 	}
 
-	copyTextureToBuffer( texture, x, y, width, height ) {
+	copyTextureToBuffer( texture, x, y, width, height, faceIndex ) {
 
-		return this.textureUtils.copyTextureToBuffer( texture, x, y, width, height );
+		return this.textureUtils.copyTextureToBuffer( texture, x, y, width, height, faceIndex );
 
 	}
 
@@ -1253,7 +1256,7 @@ class WebGPUBackend extends Backend {
 		renderContextData._currentPass = renderContextData.currentPass;
 		renderContextData._currentSets = renderContextData.currentSets;
 
-		renderContextData.currentSets = { attributes: {}, pipeline: null, index: null };
+		renderContextData.currentSets = { attributes: {}, bindingGroups: [], pipeline: null, index: null };
 		renderContextData.currentPass = this.pipelineUtils.createBundleEncoder( renderContext );
 
 	}
@@ -1361,9 +1364,11 @@ class WebGPUBackend extends Backend {
 
 		let dstX = 0;
 		let dstY = 0;
+		let dstLayer = 0;
 
 		let srcX = 0;
 		let srcY = 0;
+		let srcLayer = 0;
 
 		let srcWidth = srcTexture.image.width;
 		let srcHeight = srcTexture.image.height;
@@ -1372,6 +1377,7 @@ class WebGPUBackend extends Backend {
 
 			srcX = srcRegion.x;
 			srcY = srcRegion.y;
+			srcLayer = srcRegion.z || 0;
 			srcWidth = srcRegion.width;
 			srcHeight = srcRegion.height;
 
@@ -1381,6 +1387,7 @@ class WebGPUBackend extends Backend {
 
 			dstX = dstPosition.x;
 			dstY = dstPosition.y;
+			dstLayer = dstPosition.z || 0;
 
 		}
 
@@ -1393,16 +1400,17 @@ class WebGPUBackend extends Backend {
 			{
 				texture: sourceGPU,
 				mipLevel: level,
-				origin: { x: srcX, y: srcY, z: 0 }
+				origin: { x: srcX, y: srcY, z: srcLayer }
 			},
 			{
 				texture: destinationGPU,
 				mipLevel: level,
-				origin: { x: dstX, y: dstY, z: 0 }
+				origin: { x: dstX, y: dstY, z: dstLayer }
 			},
 			[
 				srcWidth,
-				srcHeight
+				srcHeight,
+				1
 			]
 		);
 
@@ -1410,7 +1418,7 @@ class WebGPUBackend extends Backend {
 
 	}
 
-	copyFramebufferToTexture( texture, renderContext ) {
+	copyFramebufferToTexture( texture, renderContext, rectangle ) {
 
 		const renderContextData = this.get( renderContext );
 
@@ -1459,14 +1467,14 @@ class WebGPUBackend extends Backend {
 		encoder.copyTextureToTexture(
 			{
 				texture: sourceGPU,
-				origin: { x: 0, y: 0, z: 0 }
+				origin: { x: rectangle.x, y: rectangle.y, z: 0 }
 			},
 			{
 				texture: destinationGPU
 			},
 			[
-				texture.image.width,
-				texture.image.height
+				rectangle.z,
+				rectangle.w
 			]
 		);
 
@@ -1482,7 +1490,7 @@ class WebGPUBackend extends Backend {
 		if ( renderContext.stencil ) descriptor.depthStencilAttachment.stencilLoadOp = GPULoadOp.Load;
 
 		renderContextData.currentPass = encoder.beginRenderPass( descriptor );
-		renderContextData.currentSets = { attributes: {}, pipeline: null, index: null };
+		renderContextData.currentSets = { attributes: {}, bindingGroups: [], pipeline: null, index: null };
 
 	}
 

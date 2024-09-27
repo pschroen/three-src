@@ -1,8 +1,13 @@
-import { registerNode } from '../core/Node.js';
 import ReferenceNode from './ReferenceNode.js';
 import { nodeObject } from '../tsl/TSLBase.js';
 
 class UserDataNode extends ReferenceNode {
+
+	static get type() {
+
+		return 'UserDataNode';
+
+	}
 
 	constructor( property, inputType, userData = null ) {
 
@@ -12,18 +17,16 @@ class UserDataNode extends ReferenceNode {
 
 	}
 
-	update( frame ) {
+	updateReference( state ) {
 
-		this.reference = this.userData !== null ? this.userData : frame.object.userData;
+		this.reference = this.userData !== null ? this.userData : state.object.userData;
 
-		super.update( frame );
+		return this.reference;
 
 	}
 
 }
 
 export default UserDataNode;
-
-UserDataNode.type = registerNode( 'UserData', UserDataNode );
 
 export const userData = ( name, inputType, userData ) => nodeObject( new UserDataNode( name, inputType, userData ) );

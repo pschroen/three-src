@@ -1,10 +1,16 @@
-import Node, { registerNode } from '../core/Node.js';
+import Node from '../core/Node.js';
 import { NodeUpdateType } from '../core/constants.js';
 import { uniform } from '../core/UniformNode.js';
 import { nodeObject } from '../tsl/TSLCore.js';
 import ArrayElementNode from '../utils/ArrayElementNode.js';
 
 class ReferenceElementNode extends ArrayElementNode {
+
+	static get type() {
+
+		return 'ReferenceElementNode';
+
+	}
 
 	constructor( referenceNode, indexNode ) {
 
@@ -36,6 +42,12 @@ class ReferenceElementNode extends ArrayElementNode {
 
 class ReferenceBaseNode extends Node {
 
+	static get type() {
+
+		return 'ReferenceBaseNode';
+
+	}
+
 	constructor( property, uniformType, object = null, count = null ) {
 
 		super();
@@ -48,8 +60,17 @@ class ReferenceBaseNode extends Node {
 		this.properties = property.split( '.' );
 		this.reference = object;
 		this.node = null;
+		this.group = null;
 
 		this.updateType = NodeUpdateType.OBJECT;
+
+	}
+
+	setGroup( group ) {
+
+		this.group = group;
+
+		return this;
 
 	}
 
@@ -61,7 +82,15 @@ class ReferenceBaseNode extends Node {
 
 	setNodeType( uniformType ) {
 
-		this.node = uniform( null, uniformType ).getSelf();
+		const node = uniform( null, uniformType ).getSelf();
+
+		if ( this.group !== null ) {
+
+			node.setGroup( this.group );
+
+		}
+
+		this.node = node;
 
 	}
 
@@ -69,6 +98,7 @@ class ReferenceBaseNode extends Node {
 
 		if ( this.node === null ) {
 
+			this.updateReference( builder );
 			this.updateValue();
 
 		}
@@ -136,8 +166,6 @@ class ReferenceBaseNode extends Node {
 }
 
 export default ReferenceBaseNode;
-
-ReferenceBaseNode.type = registerNode( 'ReferenceBase', ReferenceBaseNode );
 
 export const reference = ( name, type, object ) => nodeObject( new ReferenceBaseNode( name, type, object ) );
 export const referenceBuffer = ( name, type, count, object ) => nodeObject( new ReferenceBaseNode( name, type, object, count ) );

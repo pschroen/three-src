@@ -1,8 +1,13 @@
-import { registerNode } from '../core/Node.js';
 import Node from '../core/Node.js';
 import { nodeProxy } from '../tsl/TSLBase.js';
 
 class TextureSizeNode extends Node {
+
+	static get type() {
+
+		return 'TextureSizeNode';
+
+	}
 
 	constructor( textureNode, levelNode = null ) {
 
@@ -18,16 +23,14 @@ class TextureSizeNode extends Node {
 	generate( builder, output ) {
 
 		const textureProperty = this.textureNode.build( builder, 'property' );
-		const levelNode = this.levelNode.build( builder, 'int' );
+		const level = this.levelNode === null ? '0' : this.levelNode.build( builder, 'int' );
 
-		return builder.format( `${ builder.getMethod( 'textureDimensions' ) }( ${ textureProperty }, ${ levelNode } )`, this.getNodeType( builder ), output );
+		return builder.format( `${ builder.getMethod( 'textureDimensions' ) }( ${ textureProperty }, ${ level } )`, this.getNodeType( builder ), output );
 
 	}
 
 }
 
 export default TextureSizeNode;
-
-TextureSizeNode.type = registerNode( 'TextureSize', TextureSizeNode );
 
 export const textureSize = nodeProxy( TextureSizeNode );
