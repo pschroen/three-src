@@ -150,6 +150,12 @@ export default class RenderObject {
 
 	}
 
+	getIndirect() {
+
+		return this._geometries.getIndirect( this );
+
+	}
+
 	getChainArray() {
 
 		return [ this.object, this.material, this.context, this.lightsNode ];
@@ -233,7 +239,18 @@ export default class RenderObject {
 
 		}
 
-		const itemCount = hasIndex === true ? index.count : geometry.attributes.position.count;
+		const position = geometry.attributes.position;
+		let itemCount = Infinity;
+
+		if ( hasIndex ) {
+
+			itemCount = index.count;
+
+		} else if ( position !== undefined && position !== null ) {
+
+			itemCount = position.count;
+
+		}
 
 		firstVertex = Math.max( firstVertex, 0 );
 		lastVertex = Math.min( lastVertex, itemCount );

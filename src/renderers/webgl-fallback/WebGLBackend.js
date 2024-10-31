@@ -36,6 +36,25 @@ class WebGLBackend extends Backend {
 
 		const glContext = ( parameters.context !== undefined ) ? parameters.context : renderer.domElement.getContext( 'webgl2' );
 
+	 	function onContextLost( event ) {
+
+			event.preventDefault();
+
+			const contextLossInfo = {
+				api: 'WebGL',
+				message: event.statusMessage || 'Unknown reason',
+				reason: null,
+				originalEvent: event
+			};
+
+			renderer.onDeviceLost( contextLossInfo );
+
+		}
+
+		this._onContextLost = onContextLost;
+
+		renderer.domElement.addEventListener( 'webglcontextlost', onContextLost, false );
+
 		this.gl = glContext;
 
 		this.extensions = new WebGLExtensions( this );
@@ -63,6 +82,8 @@ class WebGLBackend extends Backend {
 		this.disjoint = this.extensions.get( 'EXT_disjoint_timer_query_webgl2' );
 		this.parallel = this.extensions.get( 'KHR_parallel_shader_compile' );
 
+		this._knownBindings = new WeakSet();
+
 		this._currentContext = null;
 
 	}
@@ -79,6 +100,11 @@ class WebGLBackend extends Backend {
 
 	}
 
+	async waitForGPU() {
+
+		await this.utils._clientWaitAsync();
+
+	}
 
 	initTimestampQuery( renderContext ) {
 
@@ -433,9 +459,17 @@ class WebGLBackend extends Backend {
 
 		if ( descriptor === null ) {
 
+			const clearColor = this.getClearColor();
+
+			// premultiply alpha
+
+			clearColor.r *= clearColor.a;
+			clearColor.g *= clearColor.a;
+			clearColor.b *= clearColor.a;
+
 			descriptor = {
 				textures: null,
-				clearColorValue: this.getClearColor()
+				clearColorValue: clearColor
 			};
 
 		}
@@ -450,13 +484,23 @@ class WebGLBackend extends Backend {
 
 		if ( clear !== 0 ) {
 
-			const clearColor = descriptor.clearColorValue || this.getClearColor();
+			let clearColor;
 
-			// premultiply alpha
+			if ( descriptor.clearColorValue ) {
 
-			clearColor.r *= clearColor.a;
-			clearColor.g *= clearColor.a;
-			clearColor.b *= clearColor.a;
+				clearColor = descriptor.clearColorValue;
+
+			} else {
+
+				clearColor = this.getClearColor();
+
+				// premultiply alpha
+
+				clearColor.r *= clearColor.a;
+				clearColor.g *= clearColor.a;
+				clearColor.b *= clearColor.a;
+
+			}
 
 			if ( depth ) this.state.setDepthMask( true );
 
@@ -587,6 +631,12 @@ class WebGLBackend extends Backend {
 
 		this.prepareTimestampBuffer( computeGroup );
 
+		if ( this._currentContext ) {
+
+			this._setFramebuffer( this._currentContext );
+
+		}
+
 	}
 
 	draw( renderObject/*, info*/ ) {
@@ -598,9 +648,9 @@ class WebGLBackend extends Backend {
 
 		const contextData = this.get( context );
 
-		const drawParms = renderObject.getDrawParameters();
+		const drawParams = renderObject.getDrawParameters();
 
-		if ( drawParms === null ) return;
+		if ( drawParams === null ) return;
 
 		//
 
@@ -693,8 +743,8 @@ class WebGLBackend extends Backend {
 
 		//
 
-		const { vertexCount, instanceCount } = drawParms;
-		let { firstVertex } = drawParms;
+		const { vertexCount, instanceCount } = drawParams;
+		let { firstVertex } = drawParams;
 
 		renderer.object = object;
 
@@ -1059,8 +1109,6 @@ class WebGLBackend extends Backend {
 
 		// Bindings
 
-		this.createBindings( null, bindings );
-
 		this._setupBindings( bindings, programGPU );
 
 		const attributeNodes = computeProgram.attributes;
@@ -1101,33 +1149,43 @@ class WebGLBackend extends Backend {
 
 	createBindings( bindGroup, bindings ) {
 
+		if ( this._knownBindings.has( bindings ) === false ) {
+
+			this._knownBindings.add( bindings );
+
+			let uniformBuffers = 0;
+			let textures = 0;
+
+			for ( const bindGroup of bindings ) {
+
+				this.set( bindGroup, {
+					textures: textures,
+					uniformBuffers: uniformBuffers
+				} );
+
+				for ( const binding of bindGroup.bindings ) {
+
+					if ( binding.isUniformBuffer ) uniformBuffers ++;
+					if ( binding.isSampledTexture ) textures ++;
+
+				}
+
+			}
+
+		}
+
 		this.updateBindings( bindGroup, bindings );
 
 	}
 
-	updateBindings( bindGroup, bindings ) {
-
-		if ( ! bindGroup ) return;
+	updateBindings( bindGroup /*, bindings*/ ) {
 
 		const { gl } = this;
 
-		const bindingsData = this.get( bindings );
 		const bindGroupData = this.get( bindGroup );
 
-		if ( bindingsData.textureIndex === undefined ) bindingsData.textureIndex = 0;
-
-		if ( bindGroupData.textureIndex === undefined ) {
-
-			bindGroupData.textureIndex = bindingsData.textureIndex;
-
-		} else {
-
-			// reset textureIndex to match previous mappimgs when rebuilt
-			bindingsData.textureIndex = bindGroupData.textureIndex;
-
-		}
-
-		let i = 0;
+		let i = bindGroupData.uniformBuffers;
+		let t = bindGroupData.textures;
 
 		for ( const binding of bindGroup.bindings ) {
 
@@ -1140,7 +1198,7 @@ class WebGLBackend extends Backend {
 				gl.bufferData( gl.UNIFORM_BUFFER, data, gl.DYNAMIC_DRAW );
 
 				this.set( binding, {
-					index: bindGroup.index * 2 + i ++,
+					index: i ++,
 					bufferGPU
 				} );
 
@@ -1149,7 +1207,7 @@ class WebGLBackend extends Backend {
 				const { textureGPU, glTextureType } = this.get( binding.texture );
 
 				this.set( binding, {
-					index: bindingsData.textureIndex ++,
+					index: t ++,
 					textureGPU,
 					glTextureType
 				} );
@@ -1247,9 +1305,9 @@ class WebGLBackend extends Backend {
 
 	}
 
-	copyTextureToTexture( position, srcTexture, dstTexture, level ) {
+	copyTextureToTexture( srcTexture, dstTexture, srcRegion, dstPosition, level ) {
 
-		this.textureUtils.copyTextureToTexture( position, srcTexture, dstTexture, level );
+		this.textureUtils.copyTextureToTexture( srcTexture, dstTexture, srcRegion, dstPosition, level );
 
 	}
 
@@ -1321,6 +1379,7 @@ class WebGLBackend extends Backend {
 						const texture = textures[ i ];
 						const textureData = this.get( texture );
 						textureData.renderTarget = descriptor.renderTarget;
+						textureData.cacheKey = cacheKey; // required for copyTextureToTexture()
 
 						const attachment = gl.COLOR_ATTACHMENT0 + i;
 
@@ -1336,6 +1395,8 @@ class WebGLBackend extends Backend {
 
 					const textureData = this.get( descriptor.depthTexture );
 					const depthStyle = stencilBuffer ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
+					textureData.renderTarget = descriptor.renderTarget;
+					textureData.cacheKey = cacheKey; // required for copyTextureToTexture()
 
 					gl.framebufferTexture2D( gl.FRAMEBUFFER, depthStyle, gl.TEXTURE_2D, textureData.textureGPU, 0 );
 
@@ -1611,6 +1672,12 @@ class WebGLBackend extends Backend {
 			}
 
 		}
+
+	}
+
+	dispose() {
+
+		this.renderer.domElement.removeEventListener( 'webglcontextlost', this._onContextLost );
 
 	}
 
