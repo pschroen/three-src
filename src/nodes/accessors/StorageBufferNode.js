@@ -2,7 +2,8 @@ import BufferNode from './BufferNode.js';
 import { bufferAttribute } from './BufferAttributeNode.js';
 import { nodeObject, varying } from '../tsl/TSLBase.js';
 import { storageElement } from '../utils/StorageArrayElementNode.js';
-import { GPUBufferBindingType } from '../../renderers/webgpu/utils/WebGPUConstants.js';
+import { NodeAccess } from '../core/constants.js';
+import { getTypeFromLength } from '../core/NodeUtils.js';
 
 class StorageBufferNode extends BufferNode {
 
@@ -12,16 +13,23 @@ class StorageBufferNode extends BufferNode {
 
 	}
 
-	constructor( value, bufferType, bufferCount = 0 ) {
+	constructor( value, bufferType = null, bufferCount = 0 ) {
+
+		if ( bufferType === null && ( value.isStorageBufferAttribute || value.isStorageInstancedBufferAttribute ) ) {
+
+			bufferType = getTypeFromLength( value.itemSize );
+			bufferCount = value.count;
+
+		}
 
 		super( value, bufferType, bufferCount );
 
 		this.isStorageBufferNode = true;
 
-		this.access = GPUBufferBindingType.Storage;
+		this.access = NodeAccess.READ_WRITE;
 		this.isAtomic = false;
+		this.isPBO = false;
 
-		this.bufferObject = false;
 		this.bufferCount = bufferCount;
 
 		this._attribute = null;
@@ -76,11 +84,17 @@ class StorageBufferNode extends BufferNode {
 
 	}
 
-	setBufferObject( value ) {
+	setPBO( value ) {
 
-		this.bufferObject = value;
+		this.isPBO = value;
 
 		return this;
+
+	}
+
+	getPBO() {
+
+		return this.isPBO;
 
 	}
 
@@ -94,7 +108,7 @@ class StorageBufferNode extends BufferNode {
 
 	toReadOnly() {
 
-		return this.setAccess( GPUBufferBindingType.ReadOnlyStorage );
+		return this.setAccess( NodeAccess.READ_ONLY );
 
 	}
 
@@ -164,6 +178,12 @@ class StorageBufferNode extends BufferNode {
 
 export default StorageBufferNode;
 
-// Read-Write Storage
 export const storage = ( value, type, count ) => nodeObject( new StorageBufferNode( value, type, count ) );
-export const storageObject = ( value, type, count ) => nodeObject( new StorageBufferNode( value, type, count ).setBufferObject( true ) );
+
+export const storageObject = ( value, type, count ) => { // @deprecated, r171
+
+	console.warn( 'THREE.TSL: "storageObject()" is deprecated. Use "storage().setPBO( true )" instead.' );
+
+	return storage( value, type, count ).setPBO( true );
+
+};

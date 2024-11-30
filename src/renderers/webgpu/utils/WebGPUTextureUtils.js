@@ -230,7 +230,7 @@ class WebGPUTextureUtils {
 		const backend = this.backend;
 		const textureData = backend.get( texture );
 
-		textureData.texture.destroy();
+		if ( textureData.texture !== undefined ) textureData.texture.destroy();
 
 		if ( textureData.msaaTexture !== undefined ) textureData.msaaTexture.destroy();
 
@@ -950,6 +950,10 @@ export function getFormat( texture, device = null ) {
 
 			case RGBA_ASTC_12x12_Format:
 				formatGPU = ( colorSpace === SRGBColorSpace ) ? GPUTextureFormat.ASTC12x12UnormSRGB : GPUTextureFormat.ASTC12x12Unorm;
+				break;
+
+			case RGBAFormat:
+				formatGPU = ( colorSpace === SRGBColorSpace ) ? GPUTextureFormat.RGBA8UnormSRGB : GPUTextureFormat.RGBA8Unorm;
 				break;
 
 			default:

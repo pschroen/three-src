@@ -1,5 +1,5 @@
-import { RenderTarget, Vector2 } from 'three';
-import { convertToTexture, TempNode, nodeObject, Fn, NodeUpdateType, QuadMesh, PostProcessingUtils, NodeMaterial, passTexture, uv, vec2, vec3, vec4, max, float, sub, int, Loop, fract, pow, distance } from 'three/tsl';
+import { RenderTarget, Vector2, TempNode, NodeUpdateType, QuadMesh, PostProcessingUtils, NodeMaterial } from 'three/webgpu';
+import { convertToTexture, nodeObject, Fn, passTexture, uv, vec2, vec3, vec4, max, float, sub, int, Loop, fract, pow, distance } from 'three/tsl';
 
 const _quadMesh = new QuadMesh();
 const _size = new Vector2();
@@ -20,7 +20,7 @@ class LensflareNode extends TempNode {
 
 	constructor( textureNode, params = {} ) {
 
-		super();
+		super( 'vec4' );
 
 		this.textureNode = textureNode;
 

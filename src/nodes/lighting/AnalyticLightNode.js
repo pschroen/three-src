@@ -19,12 +19,10 @@ class AnalyticLightNode extends LightingNode {
 
 		super();
 
-		this.updateType = NodeUpdateType.FRAME;
-
 		this.light = light;
 
 		this.color = new Color();
-		this.colorNode = uniform( this.color ).setGroup( renderGroup );
+		this.colorNode = ( light && light.colorNode ) || uniform( this.color ).setGroup( renderGroup );
 
 		this.baseColorNode = null;
 
@@ -32,6 +30,8 @@ class AnalyticLightNode extends LightingNode {
 		this.shadowColorNode = null;
 
 		this.isAnalyticLightNode = true;
+
+		this.updateType = NodeUpdateType.FRAME;
 
 	}
 
@@ -44,6 +44,12 @@ class AnalyticLightNode extends LightingNode {
 	getHash() {
 
 		return this.light.uuid;
+
+	}
+
+	setupShadowNode() {
+
+		return shadow( this.light );
 
 	}
 
@@ -67,7 +73,7 @@ class AnalyticLightNode extends LightingNode {
 
 			} else {
 
-				shadowNode = shadow( this.light );
+				shadowNode = this.setupShadowNode( builder );
 
 			}
 
@@ -100,6 +106,8 @@ class AnalyticLightNode extends LightingNode {
 		} else if ( this.shadowNode !== null ) {
 
 			this.shadowNode.dispose();
+			this.shadowNode = null;
+			this.shadowColorNode = null;
 
 		}
 

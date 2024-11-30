@@ -64,7 +64,7 @@ class WebGPUBackend extends Backend {
 				powerPreference: parameters.powerPreference
 			};
 
-			const adapter = await navigator.gpu.requestAdapter( adapterOptions );
+			const adapter = ( typeof navigator !== 'undefined' ) ? await navigator.gpu.requestAdapter( adapterOptions ) : null;
 
 			if ( adapter === null ) {
 
@@ -332,7 +332,7 @@ class WebGPUBackend extends Backend {
 
 			//
 
-			occlusionQuerySet = device.createQuerySet( { type: 'occlusion', count: occlusionQueryCount } );
+			occlusionQuerySet = device.createQuerySet( { type: 'occlusion', count: occlusionQueryCount, label: `occlusionQuerySet_${ renderContext.id }` } );
 
 			renderContextData.occlusionQuerySet = occlusionQuerySet;
 			renderContextData.occlusionQueryIndex = 0;
@@ -1061,7 +1061,7 @@ class WebGPUBackend extends Backend {
 			data.sampleCount !== sampleCount || data.colorSpace !== colorSpace ||
 			data.colorFormat !== colorFormat || data.depthStencilFormat !== depthStencilFormat ||
 			data.primitiveTopology !== primitiveTopology ||
-			data.clippingContextCacheKey !== renderObject.clippingContext.cacheKey
+			data.clippingContextCacheKey !== renderObject.clippingContextCacheKey
 		) {
 
 			data.material = material; data.materialVersion = material.version;
@@ -1079,7 +1079,7 @@ class WebGPUBackend extends Backend {
 			data.colorFormat = colorFormat;
 			data.depthStencilFormat = depthStencilFormat;
 			data.primitiveTopology = primitiveTopology;
-			data.clippingContextCacheKey = renderObject.clippingContext.cacheKey;
+			data.clippingContextCacheKey = renderObject.clippingContextCacheKey;
 
 			needsUpdate = true;
 
@@ -1110,7 +1110,7 @@ class WebGPUBackend extends Backend {
 			utils.getCurrentColorSpace( renderContext ), utils.getCurrentColorFormat( renderContext ), utils.getCurrentDepthStencilFormat( renderContext ),
 			utils.getPrimitiveTopology( object, material ),
 			renderObject.getGeometryCacheKey(),
-			renderObject.clippingContext.cacheKey
+			renderObject.clippingContextCacheKey
 		].join();
 
 	}
@@ -1174,9 +1174,9 @@ class WebGPUBackend extends Backend {
 
 		if ( ! renderContextData.timeStampQuerySet ) {
 
-			// Create a GPUQuerySet which holds 2 timestamp query results: one for the
-			// beginning and one for the end of compute pass execution.
-			const timeStampQuerySet = this.device.createQuerySet( { type: 'timestamp', count: 2 } );
+
+			const type = renderContext.isComputeNode ? 'compute' : 'render';
+			const timeStampQuerySet = this.device.createQuerySet( { type: 'timestamp', count: 2, label: `timestamp_${type}_${renderContext.id}` } );
 
 			const timestampWrites = {
 				querySet: timeStampQuerySet,
@@ -1184,9 +1184,7 @@ class WebGPUBackend extends Backend {
 				endOfPassWriteIndex: 1, // Write timestamp in index 1 when pass ends.
 			};
 
-			Object.assign( descriptor, {
-				timestampWrites,
-			} );
+			Object.assign( descriptor, { timestampWrites } );
 
 			renderContextData.timeStampQuerySet = timeStampQuerySet;
 
@@ -1217,18 +1215,21 @@ class WebGPUBackend extends Backend {
 					label: 'timestamp result buffer',
 					size: size,
 					usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
-				} ),
-				isMappingPending: false,
+				} )
 			};
 
 		}
 
-		const { resolveBuffer, resultBuffer, isMappingPending } = renderContextData.currentTimestampQueryBuffers;
+		const { resolveBuffer, resultBuffer } = renderContextData.currentTimestampQueryBuffers;
 
-		if ( isMappingPending === true ) return;
 
 		encoder.resolveQuerySet( renderContextData.timeStampQuerySet, 0, 2, resolveBuffer, 0 );
-		encoder.copyBufferToBuffer( resolveBuffer, 0, resultBuffer, 0, size );
+
+		if ( resultBuffer.mapState === 'unmapped' ) {
+
+			encoder.copyBufferToBuffer( resolveBuffer, 0, resultBuffer, 0, size );
+
+		}
 
 	}
 
@@ -1240,25 +1241,26 @@ class WebGPUBackend extends Backend {
 
 		if ( renderContextData.currentTimestampQueryBuffers === undefined ) return;
 
-		const { resultBuffer, isMappingPending } = renderContextData.currentTimestampQueryBuffers;
+		const { resultBuffer } = renderContextData.currentTimestampQueryBuffers;
 
-		if ( isMappingPending === true ) return;
+		await this.device.queue.onSubmittedWorkDone();
 
-		renderContextData.currentTimestampQueryBuffers.isMappingPending = true;
+		if ( resultBuffer.mapState === 'unmapped' ) {
 
-		resultBuffer.mapAsync( GPUMapMode.READ ).then( () => {
+			resultBuffer.mapAsync( GPUMapMode.READ ).then( () => {
 
-			const times = new BigUint64Array( resultBuffer.getMappedRange() );
-			const duration = Number( times[ 1 ] - times[ 0 ] ) / 1000000;
+				const times = new BigUint64Array( resultBuffer.getMappedRange() );
+				const duration = Number( times[ 1 ] - times[ 0 ] ) / 1000000;
 
 
-			this.renderer.info.updateTimestamp( type, duration );
+				this.renderer.info.updateTimestamp( type, duration );
 
-			resultBuffer.unmap();
+				resultBuffer.unmap();
 
-			renderContextData.currentTimestampQueryBuffers.isMappingPending = false;
 
-		} );
+			} );
+
+		}
 
 	}
 
@@ -1341,15 +1343,15 @@ class WebGPUBackend extends Backend {
 
 	// bindings
 
-	createBindings( bindGroup ) {
+	createBindings( bindGroup, bindings, cacheIndex, version ) {
 
-		this.bindingUtils.createBindings( bindGroup );
+		this.bindingUtils.createBindings( bindGroup, bindings, cacheIndex, version );
 
 	}
 
-	updateBindings( bindGroup ) {
+	updateBindings( bindGroup, bindings, cacheIndex, version ) {
 
-		this.bindingUtils.createBindings( bindGroup );
+		this.bindingUtils.createBindings( bindGroup, bindings, cacheIndex, version );
 
 	}
 
@@ -1537,7 +1539,7 @@ class WebGPUBackend extends Backend {
 		encoder.copyTextureToTexture(
 			{
 				texture: sourceGPU,
-				origin: { x: rectangle.x, y: rectangle.y, z: 0 }
+				origin: [ rectangle.x, rectangle.y, 0 ],
 			},
 			{
 				texture: destinationGPU
@@ -1565,6 +1567,20 @@ class WebGPUBackend extends Backend {
 
 			renderContextData.currentPass = encoder.beginRenderPass( descriptor );
 			renderContextData.currentSets = { attributes: {}, bindingGroups: [], pipeline: null, index: null };
+
+			if ( renderContext.viewport ) {
+
+				this.updateViewport( renderContext );
+
+			}
+
+			if ( renderContext.scissor ) {
+
+				const { x, y, width, height } = renderContext.scissorValue;
+
+				renderContextData.currentPass.setScissorRect( x, y, width, height );
+
+			}
 
 		} else {
 

@@ -166,7 +166,7 @@ class WebGLBackend extends Backend {
 
 	}
 
-	  async resolveTimestampAsync( renderContext, type = 'render' ) {
+	async resolveTimestampAsync( renderContext, type = 'render' ) {
 
 		if ( ! this.disjoint || ! this.trackTimestamp ) return;
 
@@ -641,7 +641,7 @@ class WebGLBackend extends Backend {
 
 	draw( renderObject/*, info*/ ) {
 
-		const { object, pipeline, material, context } = renderObject;
+		const { object, pipeline, material, context, hardwareClippingPlanes } = renderObject;
 		const { programGPU } = this.get( pipeline );
 
 		const { gl, state } = this;
@@ -658,15 +658,17 @@ class WebGLBackend extends Backend {
 
 		const frontFaceCW = ( object.isMesh && object.matrixWorld.determinant() < 0 );
 
-		state.setMaterial( material, frontFaceCW );
+		state.setMaterial( material, frontFaceCW, hardwareClippingPlanes );
 
 		state.useProgram( programGPU );
 
 		//
 
-		let vaoGPU = renderObject.staticVao;
+		const renderObjectData = this.get( renderObject );
 
-		if ( vaoGPU === undefined ) {
+		let vaoGPU = renderObjectData.staticVao;
+
+		if ( vaoGPU === undefined || renderObjectData.geometryId !== renderObject.geometry.id ) {
 
 			const vaoKey = this._getVaoKey( renderObject.getIndex(), renderObject.getAttributes() );
 
@@ -678,7 +680,12 @@ class WebGLBackend extends Backend {
 
 				( { vaoGPU, staticVao } = this._createVao( renderObject.getIndex(), renderObject.getAttributes() ) );
 
-				if ( staticVao ) renderObject.staticVao = vaoGPU;
+				if ( staticVao ) {
+
+					renderObjectData.staticVao = vaoGPU;
+					renderObjectData.geometryId = renderObject.geometry.id;
+
+				}
 
 			}
 
