@@ -1,6 +1,14 @@
 import TempNode from '../core/TempNode.js';
 import { addMethodChaining, nodeProxy } from '../tsl/TSLCore.js';
 
+/** @module OperatorNode **/
+
+/**
+ * This node represents basic mathematical and logical operations like addition,
+ * subtraction or comparisons (e.g. `equal()`).
+ *
+ * @augments TempNode
+ */
 class OperatorNode extends TempNode {
 
 	static get type() {
@@ -9,6 +17,14 @@ class OperatorNode extends TempNode {
 
 	}
 
+	/**
+	 * Constructs a new operator node.
+	 *
+	 * @param {String} op - The operator.
+	 * @param {Node} aNode - The first input.
+	 * @param {Node} bNode - The second input.
+	 * @param {...Node} params - Additional input parameters.
+	 */
 	constructor( op, aNode, bNode, ...params ) {
 
 		super();
@@ -28,12 +44,37 @@ class OperatorNode extends TempNode {
 
 		}
 
+		/**
+		 * The operator.
+		 *
+		 * @type {String}
+		 */
 		this.op = op;
+
+		/**
+		 * The first input.
+		 *
+		 * @type {Node}
+		 */
 		this.aNode = aNode;
+
+		/**
+		 * The second input.
+		 *
+		 * @type {Node}
+		 */
 		this.bNode = bNode;
 
 	}
 
+	/**
+	 * This method is overwritten since the node type is inferred from the operator
+	 * and the input node types.
+	 *
+	 * @param {NodeBuilder} builder - The current node builder.
+	 * @param {String} output - The current output string.
+	 * @return {String} The node type.
+	 */
 	getNodeType( builder, output ) {
 
 		const op = this.op;
@@ -264,26 +305,218 @@ class OperatorNode extends TempNode {
 
 export default OperatorNode;
 
+/**
+ * Returns the addition of two or more value.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @param {...Node} params - Additional input parameters.
+ * @returns {OperatorNode}
+ */
 export const add = nodeProxy( OperatorNode, '+' );
+
+/**
+ * Returns the subtraction of two or more value.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @param {...Node} params - Additional input parameters.
+ * @returns {OperatorNode}
+ */
 export const sub = nodeProxy( OperatorNode, '-' );
+
+/**
+ * Returns the multiplication of two or more value.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @param {...Node} params - Additional input parameters.
+ * @returns {OperatorNode}
+ */
 export const mul = nodeProxy( OperatorNode, '*' );
+
+/**
+ * Returns the division of two or more value.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @param {...Node} params - Additional input parameters.
+ * @returns {OperatorNode}
+ */
 export const div = nodeProxy( OperatorNode, '/' );
+
+/**
+ * Computes the remainder of dividing the first node by the second, for integer values.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @returns {OperatorNode}
+ */
 export const modInt = nodeProxy( OperatorNode, '%' );
+
+/**
+ * Checks if two nodes are equal.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @returns {OperatorNode}
+ */
 export const equal = nodeProxy( OperatorNode, '==' );
+
+/**
+ * Checks if two nodes are not equal.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @returns {OperatorNode}
+ */
 export const notEqual = nodeProxy( OperatorNode, '!=' );
+
+/**
+ * Checks if the first node is less than the second.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @returns {OperatorNode}
+ */
 export const lessThan = nodeProxy( OperatorNode, '<' );
+
+/**
+ * Checks if the first node is greater than the second.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @returns {OperatorNode}
+ */
 export const greaterThan = nodeProxy( OperatorNode, '>' );
+
+/**
+ * Checks if the first node is less than or equal to the second.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @returns {OperatorNode}
+ */
 export const lessThanEqual = nodeProxy( OperatorNode, '<=' );
+
+/**
+ * Checks if the first node is greater than or equal to the second.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @returns {OperatorNode}
+ */
 export const greaterThanEqual = nodeProxy( OperatorNode, '>=' );
+
+/**
+ * Performs logical AND on two nodes.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @returns {OperatorNode}
+ */
 export const and = nodeProxy( OperatorNode, '&&' );
+
+/**
+ * Performs logical OR on two nodes.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @returns {OperatorNode}
+ */
 export const or = nodeProxy( OperatorNode, '||' );
+
+/**
+ * Performs logical NOT on a node.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @returns {OperatorNode}
+ */
 export const not = nodeProxy( OperatorNode, '!' );
+
+/**
+ * Performs logical XOR on two nodes.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @returns {OperatorNode}
+ */
 export const xor = nodeProxy( OperatorNode, '^^' );
+
+/**
+ * Performs bitwise AND on two nodes.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @returns {OperatorNode}
+ */
 export const bitAnd = nodeProxy( OperatorNode, '&' );
+
+/**
+ * Performs bitwise NOT on a node.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @returns {OperatorNode}
+ */
 export const bitNot = nodeProxy( OperatorNode, '~' );
+
+/**
+ * Performs bitwise OR on two nodes.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @returns {OperatorNode}
+ */
 export const bitOr = nodeProxy( OperatorNode, '|' );
+
+/**
+ * Performs bitwise XOR on two nodes.
+ *
+ * @function
+ * @param {Node} aNode - The first input.
+ * @param {Node} bNode - The second input.
+ * @returns {OperatorNode}
+ */
 export const bitXor = nodeProxy( OperatorNode, '^' );
+
+/**
+ * Shifts a node to the left.
+ *
+ * @function
+ * @param {Node} aNode - The node to shift.
+ * @param {Node} bNode - The value to shift.
+ * @returns {OperatorNode}
+ */
 export const shiftLeft = nodeProxy( OperatorNode, '<<' );
+
+/**
+ * Shifts a node to the right.
+ *
+ * @function
+ * @param {Node} aNode - The node to shift.
+ * @param {Node} bNode - The value to shift.
+ * @returns {OperatorNode}
+ */
 export const shiftRight = nodeProxy( OperatorNode, '>>' );
 
 addMethodChaining( 'add', add );

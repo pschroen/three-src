@@ -1,13 +1,24 @@
 import { attribute } from '../core/AttributeNode.js';
 import { cameraViewMatrix } from './Camera.js';
 import { modelNormalMatrix, modelWorldMatrix } from './ModelNode.js';
-import { mat3, vec3 } from '../tsl/TSLBase.js';
+import { mat3, vec3, Fn, varying } from '../tsl/TSLBase.js';
 import { positionView } from './Position.js';
-import { Fn, varying } from '../tsl/TSLBase.js';
 import { faceDirection } from '../display/FrontFacingNode.js';
 
+/** @module Normal **/
+
+/**
+ * TSL object that represents the normal attribute of the current rendered object.
+ *
+ * @type {Node<vec3>}
+ */
 export const normalGeometry = attribute( 'normal', 'vec3' );
 
+/**
+ * TSL object that represents the vertex normal in local space of the current rendered object.
+ *
+ * @type {Node<vec3>}
+ */
 export const normalLocal = ( Fn( ( builder ) => {
 
 	if ( builder.geometry.hasAttribute( 'normal' ) === false ) {
@@ -22,8 +33,18 @@ export const normalLocal = ( Fn( ( builder ) => {
 
 }, 'vec3' ).once() )().toVar( 'normalLocal' );
 
+/**
+ * TSL object that represents the flat vertex normal in view space of the current rendered object.
+ *
+ * @type {Node<vec3>}
+ */
 export const normalFlat = positionView.dFdx().cross( positionView.dFdy() ).normalize().toVar( 'normalFlat' );
 
+/**
+ * TSL object that represents the vertex normal in view space of the current rendered object.
+ *
+ * @type {Node<vec3>}
+ */
 export const normalView = ( Fn( ( builder ) => {
 
 	let node;
@@ -42,23 +63,50 @@ export const normalView = ( Fn( ( builder ) => {
 
 }, 'vec3' ).once() )().toVar( 'normalView' );
 
+/**
+ * TSL object that represents the vertex normal in world space of the current rendered object.
+ *
+ * @type {Node<vec3>}
+ */
 export const normalWorld = varying( normalView.transformDirection( cameraViewMatrix ), 'v_normalWorld' ).normalize().toVar( 'normalWorld' );
 
+/**
+ * TSL object that represents the transformed vertex normal in view space of the current rendered object.
+ *
+ * @type {Node<vec3>}
+ */
 export const transformedNormalView = ( Fn( ( builder ) => {
 
 	return builder.context.setupNormal();
 
 }, 'vec3' ).once() )().mul( faceDirection ).toVar( 'transformedNormalView' );
 
-
+/**
+ * TSL object that represents the transformed vertex normal in world space of the current rendered object.
+ *
+ * @type {Node<vec3>}
+ */
 export const transformedNormalWorld = transformedNormalView.transformDirection( cameraViewMatrix ).toVar( 'transformedNormalWorld' );
 
+/**
+ * TSL object that represents the transformed clearcoat vertex normal in view space of the current rendered object.
+ *
+ * @type {Node<vec3>}
+ */
 export const transformedClearcoatNormalView = ( Fn( ( builder ) => {
 
 	return builder.context.setupClearcoatNormal();
 
 }, 'vec3' ).once() )().mul( faceDirection ).toVar( 'transformedClearcoatNormalView' );
 
+/**
+ * Transforms the normal with the given matrix.
+ *
+ * @function
+ * @param {Node<vec3>} normal - The normal.
+ * @param {Node<mat3>} [matrix=modelWorldMatrix] - The matrix.
+ * @return {Node<vec3>} The transformed normal.
+ */
 export const transformNormal = Fn( ( [ normal, matrix = modelWorldMatrix ] ) => {
 
 	const m = mat3( matrix );
@@ -69,6 +117,14 @@ export const transformNormal = Fn( ( [ normal, matrix = modelWorldMatrix ] ) => 
 
 } );
 
+/**
+ * Transforms the given normal from local to view space.
+ *
+ * @function
+ * @param {Node<vec3>} normal - The normal.
+ * @param {NodeBuilder} builder - The current node builder.
+ * @return {Node<vec3>} The transformed normal.
+ */
 export const transformNormalToView = Fn( ( [ normal ], builder ) => {
 
 	const modelNormalViewMatrix = builder.renderer.nodes.modelNormalViewMatrix;
