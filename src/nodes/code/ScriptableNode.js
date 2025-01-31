@@ -66,7 +66,7 @@ class Parameters {
 }
 
 /**
- * Defines the resouces (e.g. namespaces) of scriptable nodes.
+ * Defines the resources (e.g. namespaces) of scriptable nodes.
  *
  * @type {Resources}
  */
@@ -287,7 +287,7 @@ class ScriptableNode extends Node {
 	}
 
 	/**
-	 * Returns a paramater for the given name
+	 * Returns a parameter for the given name
 	 *
 	 * @param {String} name - The name of the parameter.
 	 * @return {ScriptableValueNode} The node value.
@@ -416,7 +416,7 @@ class ScriptableNode extends Node {
 	 *
 	 * @param {String} name - The function name.
 	 * @param {...Any} params - A list of parameters.
-	 * @return {Any} The result of the function call.
+	 * @return {Promise<Any>} The result of the function call.
 	 */
 	async callAsync( name, ...params ) {
 

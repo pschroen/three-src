@@ -50,19 +50,30 @@ class StorageBufferNode extends BufferNode {
 	 * Constructs a new storage buffer node.
 	 *
 	 * @param {StorageBufferAttribute|StorageInstancedBufferAttribute|BufferAttribute} value - The buffer data.
-	 * @param {String?} [bufferType=null] - The buffer type (e.g. `'vec3'`).
+	 * @param {(String|Struct)?} [bufferType=null] - The buffer type (e.g. `'vec3'`).
 	 * @param {Number} [bufferCount=0] - The buffer count.
 	 */
 	constructor( value, bufferType = null, bufferCount = 0 ) {
 
-		if ( bufferType === null && ( value.isStorageBufferAttribute || value.isStorageInstancedBufferAttribute ) ) {
+		let nodeType, structTypeNode = null;
 
-			bufferType = getTypeFromLength( value.itemSize );
+		if ( bufferType && bufferType.isStruct ) {
+
+			nodeType = 'struct';
+			structTypeNode = bufferType.layout;
+
+		} else if ( bufferType === null && ( value.isStorageBufferAttribute || value.isStorageInstancedBufferAttribute ) ) {
+
+			nodeType = getTypeFromLength( value.itemSize );
 			bufferCount = value.count;
+
+		} else {
+
+			nodeType = bufferType;
 
 		}
 
-		super( value, bufferType, bufferCount );
+		super( value, nodeType, bufferCount );
 
 		/**
 		 * This flag can be used for type testing.
@@ -72,6 +83,15 @@ class StorageBufferNode extends BufferNode {
 		 * @default true
 		 */
 		this.isStorageBufferNode = true;
+
+
+		/**
+		 * The buffer struct type.
+		 *
+		 * @type {structTypeNode?}
+		 * @default null
+		 */
+		this.structTypeNode = structTypeNode;
 
 		/**
 		 * The access type of the texture node.
@@ -293,6 +313,12 @@ class StorageBufferNode extends BufferNode {
 	 */
 	getNodeType( builder ) {
 
+		if ( this.structTypeNode !== null ) {
+
+			return this.structTypeNode.getNodeType( builder );
+
+		}
+
 		if ( builder.isAvailable( 'storageBuffer' ) || builder.isAvailable( 'indirectStorageBuffer' ) ) {
 
 			return super.getNodeType( builder );
@@ -312,6 +338,8 @@ class StorageBufferNode extends BufferNode {
 	 * @return {String} The generated code snippet.
 	 */
 	generate( builder ) {
+
+		if ( this.structTypeNode !== null ) this.structTypeNode.build( builder );
 
 		if ( builder.isAvailable( 'storageBuffer' ) || builder.isAvailable( 'indirectStorageBuffer' ) ) {
 
@@ -338,12 +366,21 @@ export default StorageBufferNode;
  *
  * @function
  * @param {StorageBufferAttribute|StorageInstancedBufferAttribute|BufferAttribute} value - The buffer data.
- * @param {String?} [type=null] - The buffer type (e.g. `'vec3'`).
+ * @param {(String|Struct)?} [type=null] - The buffer type (e.g. `'vec3'`).
  * @param {Number} [count=0] - The buffer count.
  * @returns {StorageBufferNode}
  */
 export const storage = ( value, type = null, count = 0 ) => nodeObject( new StorageBufferNode( value, type, count ) );
 
+/**
+ * @function
+ * @deprecated since r171. Use `storage().setPBO( true )` instead.
+ *
+ * @param {StorageBufferAttribute|StorageInstancedBufferAttribute|BufferAttribute} value - The buffer data.
+ * @param {String?} type - The buffer type (e.g. `'vec3'`).
+ * @param {Number} count - The buffer count.
+ * @returns {StorageBufferNode}
+ */
 export const storageObject = ( value, type, count ) => { // @deprecated, r171
 
 	console.warn( 'THREE.TSL: "storageObject()" is deprecated. Use "storage().setPBO( true )" instead.' );

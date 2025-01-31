@@ -45,39 +45,109 @@ precision highp isampler2DArray;
 precision lowp sampler2DShadow;
 `;
 
+/**
+ * A node builder targeting GLSL.
+ *
+ * This module generates GLSL shader code from node materials and also
+ * generates the respective bindings and vertex buffer definitions. These
+ * data are later used by the renderer to create render and compute pipelines
+ * for render objects.
+ *
+ * @augments NodeBuilder
+ */
 class GLSLNodeBuilder extends NodeBuilder {
 
+	/**
+	 * Constructs a new GLSL node builder renderer.
+	 *
+	 * @param {Object3D} object - The 3D object.
+	 * @param {Renderer} renderer - The renderer.
+	 */
 	constructor( object, renderer ) {
 
 		super( object, renderer, new GLSLNodeParser() );
 
+		/**
+		 * A dictionary holds for each shader stage ('vertex', 'fragment', 'compute')
+		 * another dictionary which manages UBOs per group ('render','frame','object').
+		 *
+		 * @type {Object<String,Object<String,NodeUniformsGroup>>}
+		 */
 		this.uniformGroups = {};
+
+		/**
+		 * An array that holds objects defining the varying and attribute data in
+		 * context of Transform Feedback.
+		 *
+		 * @type {Object<String,Map<String,Object>>}
+		 */
 		this.transforms = [];
+
+		/**
+		 * A dictionary that holds for each shader stage a Map of used extensions.
+		 *
+		 * @type {Object<String,Map<String,Object>>}
+		 */
 		this.extensions = {};
+
+		/**
+		 * A dictionary that holds for each shader stage an Array of used builtins.
+		 *
+		 * @type {Object<String,Array<String>>}
+		 */
 		this.builtins = { vertex: [], fragment: [], compute: [] };
 
+		/**
+		 * Whether comparison in shader code are generated with methods or not.
+		 *
+		 * @type {Boolean}
+		 * @default true
+		 */
 		this.useComparisonMethod = true;
 
 	}
 
+	/**
+	 * Checks if the given texture requires a manual conversion to the working color space.
+	 *
+	 * @param {Texture} texture - The texture to check.
+	 * @return {Boolean} Whether the given texture requires a conversion to working color space or not.
+	 */
 	needsToWorkingColorSpace( texture ) {
 
 		return texture.isVideoTexture === true && texture.colorSpace !== NoColorSpace;
 
 	}
 
+	/**
+	 * Returns the native shader method name for a given generic name.
+	 *
+	 * @param {String} method - The method name to resolve.
+	 * @return {String} The resolved GLSL method name.
+	 */
 	getMethod( method ) {
 
 		return glslMethods[ method ] || method;
 
 	}
 
+	/**
+	 * Returns the output struct name. Not relevant for GLSL.
+	 *
+	 * @return {String}
+	 */
 	getOutputStructName() {
 
 		return '';
 
 	}
 
+	/**
+	 * Builds the given shader node.
+	 *
+	 * @param {ShaderNodeInternal} shaderNode - The shader node.
+	 * @return {String} The GLSL function code.
+	 */
 	buildFunctionCode( shaderNode ) {
 
 		const layout = shaderNode.layout;
@@ -108,6 +178,12 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Setups the Pixel Buffer Object (PBO) for the given storage
+	 * buffer node.
+	 *
+	 * @param {StorageBufferNode} storageBufferNode - The storage buffer node.
+	 */
 	setupPBO( storageBufferNode ) {
 
 		const attribute = storageBufferNode.value;
@@ -176,6 +252,13 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Returns a GLSL snippet that represents the property name of the given node.
+	 *
+	 * @param {Node} node - The node.
+	 * @param {String} [shaderStage=this.shaderStage] - The shader stage this code snippet is generated for.
+	 * @return {String} The property name.
+	 */
 	getPropertyName( node, shaderStage = this.shaderStage ) {
 
 		if ( node.isNodeUniform && node.node.isTextureNode !== true && node.node.isBufferNode !== true ) {
@@ -188,6 +271,13 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Setups the Pixel Buffer Object (PBO) for the given storage
+	 * buffer node.
+	 *
+	 * @param {StorageArrayElementNode} storageArrayElementNode - The storage array element node.
+	 * @return {String} The property name.
+	 */
 	generatePBO( storageArrayElementNode ) {
 
 		const { node, indexNode } = storageArrayElementNode;
@@ -270,6 +360,16 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Generates the GLSL snippet that reads a single texel from a texture without sampling or filtering.
+	 *
+	 * @param {Texture} texture - The texture.
+	 * @param {String} textureProperty - The name of the texture uniform in the shader.
+	 * @param {String} uvIndexSnippet - A GLSL snippet that represents texture coordinates used for sampling.
+	 * @param {String?} depthSnippet - A GLSL snippet that represents the 0-based texture array index to sample.
+	 * @param {String} [levelSnippet='0u'] - A GLSL snippet that represents the mip level, with level 0 containing a full size version of the texture.
+	 * @return {String} The GLSL snippet.
+	 */
 	generateTextureLoad( texture, textureProperty, uvIndexSnippet, depthSnippet, levelSnippet = '0' ) {
 
 		if ( depthSnippet ) {
@@ -284,6 +384,15 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Generates the GLSL snippet for sampling/loading the given texture.
+	 *
+	 * @param {Texture} texture - The texture.
+	 * @param {String} textureProperty - The name of the texture uniform in the shader.
+	 * @param {String} uvSnippet - A GLSL snippet that represents texture coordinates used for sampling.
+	 * @param {String?} depthSnippet -  A GLSL snippet that represents the 0-based texture array index to sample.
+	 * @return {String} The GLSL snippet.
+	 */
 	generateTexture( texture, textureProperty, uvSnippet, depthSnippet ) {
 
 		if ( texture.isDepthTexture ) {
@@ -300,24 +409,63 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Generates the GLSL snippet when sampling textures with explicit mip level.
+	 *
+	 * @param {Texture} texture - The texture.
+	 * @param {String} textureProperty - The name of the texture uniform in the shader.
+	 * @param {String} uvSnippet - A GLSL snippet that represents texture coordinates used for sampling.
+	 * @param {String} levelSnippet - A GLSL snippet that represents the mip level, with level 0 containing a full size version of the texture.
+	 * @return {String} The GLSL snippet.
+	 */
 	generateTextureLevel( texture, textureProperty, uvSnippet, levelSnippet ) {
 
 		return `textureLod( ${ textureProperty }, ${ uvSnippet }, ${ levelSnippet } )`;
 
 	}
 
+	/**
+	 * Generates the GLSL snippet when sampling textures with a bias to the mip level.
+	 *
+	 * @param {Texture} texture - The texture.
+	 * @param {String} textureProperty - The name of the texture uniform in the shader.
+	 * @param {String} uvSnippet - A GLSL snippet that represents texture coordinates used for sampling.
+	 * @param {String} biasSnippet - A GLSL snippet that represents the bias to apply to the mip level before sampling.
+	 * @return {String} The GLSL snippet.
+	 */
 	generateTextureBias( texture, textureProperty, uvSnippet, biasSnippet ) {
 
 		return `texture( ${ textureProperty }, ${ uvSnippet }, ${ biasSnippet } )`;
 
 	}
 
+	/**
+	 * Generates the GLSL snippet for sampling/loading the given texture using explicit gradients.
+	 *
+	 * @param {Texture} texture - The texture.
+	 * @param {String} textureProperty - The name of the texture uniform in the shader.
+	 * @param {String} uvSnippet - A GLSL snippet that represents texture coordinates used for sampling.
+	 * @param {Array<String>} gradSnippet - An array holding both gradient GLSL snippets.
+	 * @return {String} The GLSL snippet.
+	 */
 	generateTextureGrad( texture, textureProperty, uvSnippet, gradSnippet ) {
 
 		return `textureGrad( ${ textureProperty }, ${ uvSnippet }, ${ gradSnippet[ 0 ] }, ${ gradSnippet[ 1 ] } )`;
 
 	}
 
+	/**
+	 * Generates the GLSL snippet for sampling a depth texture and comparing the sampled depth values
+	 * against a reference value.
+	 *
+	 * @param {Texture} texture - The texture.
+	 * @param {String} textureProperty - The name of the texture uniform in the shader.
+	 * @param {String} uvSnippet - A GLSL snippet that represents texture coordinates used for sampling.
+	 * @param {String} compareSnippet -  A GLSL snippet that represents the reference value.
+	 * @param {String?} depthSnippet - A GLSL snippet that represents 0-based texture array index to sample.
+	 * @param {String} [shaderStage=this.shaderStage] - The shader stage this code snippet is generated for.
+	 * @return {String} The GLSL snippet.
+	 */
 	generateTextureCompare( texture, textureProperty, uvSnippet, compareSnippet, depthSnippet, shaderStage = this.shaderStage ) {
 
 		if ( shaderStage === 'fragment' ) {
@@ -332,6 +480,12 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Returns the variables of the given shader stage as a GLSL string.
+	 *
+	 * @param {String} shaderStage - The shader stage.
+	 * @return {String} The GLSL snippet that defines the variables.
+	 */
 	getVars( shaderStage ) {
 
 		const snippets = [];
@@ -342,7 +496,7 @@ ${ flowData.code }
 
 			for ( const variable of vars ) {
 
-				snippets.push( `${ this.getVar( variable.type, variable.name ) };` );
+				snippets.push( `${ this.getVar( variable.type, variable.name, variable.count ) };` );
 
 			}
 
@@ -352,6 +506,12 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Returns the uniforms of the given shader stage as a GLSL string.
+	 *
+	 * @param {String} shaderStage - The shader stage.
+	 * @return {String} The GLSL snippet that defines the uniforms.
+	 */
 	getUniforms( shaderStage ) {
 
 		const uniforms = this.uniforms[ shaderStage ];
@@ -469,6 +629,12 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Returns the type for a given buffer attribute.
+	 *
+	 * @param {BufferAttribute} attribute - The buffer attribute.
+	 * @return {String} The type.
+	 */
 	getTypeFromAttribute( attribute ) {
 
 		let nodeType = super.getTypeFromAttribute( attribute );
@@ -493,6 +659,12 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Returns the shader attributes of the given shader stage as a GLSL string.
+	 *
+	 * @param {String} shaderStage - The shader stage.
+	 * @return {String} The GLSL snippet that defines the shader attributes.
+	 */
 	getAttributes( shaderStage ) {
 
 		let snippet = '';
@@ -515,15 +687,19 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Returns the members of the given struct type node as a GLSL string.
+	 *
+	 * @param {StructTypeNode} struct - The struct type node.
+	 * @return {String} The GLSL snippet that defines the struct members.
+	 */
 	getStructMembers( struct ) {
 
 		const snippets = [];
-		const members = struct.getMemberTypes();
 
-		for ( let i = 0; i < members.length; i ++ ) {
+		for ( const member of struct.members ) {
 
-			const member = members[ i ];
-			snippets.push( `layout( location = ${i} ) out ${ member} m${i};` );
+			snippets.push( `\t${ member.type } ${ member.name };` );
 
 		}
 
@@ -531,33 +707,57 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Returns the structs of the given shader stage as a GLSL string.
+	 *
+	 * @param {String} shaderStage - The shader stage.
+	 * @return {String} The GLSL snippet that defines the structs.
+	 */
 	getStructs( shaderStage ) {
 
 		const snippets = [];
 		const structs = this.structs[ shaderStage ];
 
-		if ( structs.length === 0 ) {
+		const outputSnippet = [];
 
-			return 'layout( location = 0 ) out vec4 fragColor;\n';
+		for ( const struct of structs ) {
+
+			if ( struct.output ) {
+
+				for ( const member of struct.members ) {
+
+					outputSnippet.push( `layout( location = ${ member.index } ) out ${ member.type } ${ member.name };` );
+
+				}
+
+			} else {
+
+				let snippet = 'struct ' + struct.name + ' {\n';
+				snippet += this.getStructMembers( struct );
+				snippet += '\n};\n';
+
+				snippets.push( snippet );
+
+			}
 
 		}
 
-		for ( let index = 0, length = structs.length; index < length; index ++ ) {
+		if ( outputSnippet.length === 0 ) {
 
-			const struct = structs[ index ];
-
-			let snippet = '\n';
-			snippet += this.getStructMembers( struct );
-			snippet += '\n';
-
-			snippets.push( snippet );
+			outputSnippet.push( 'layout( location = 0 ) out vec4 fragColor;' );
 
 		}
 
-		return snippets.join( '\n\n' );
+		return '\n' + outputSnippet.join( '\n' ) + '\n\n' + snippets.join( '\n' );
 
 	}
 
+	/**
+	 * Returns the varyings of the given shader stage as a GLSL string.
+	 *
+	 * @param {String} shaderStage - The shader stage.
+	 * @return {String} The GLSL snippet that defines the varyings.
+	 */
 	getVaryings( shaderStage ) {
 
 		let snippet = '';
@@ -569,10 +769,20 @@ ${ flowData.code }
 			for ( const varying of varyings ) {
 
 				if ( shaderStage === 'compute' ) varying.needsInterpolation = true;
-				const type = this.getType( varying.type );
-				const flat = type.includes( 'int' ) || type.includes( 'uv' ) || type.includes( 'iv' ) ? 'flat ' : '';
 
-				snippet += `${flat}${varying.needsInterpolation ? 'out' : '/*out*/'} ${type} ${varying.name};\n`;
+				const type = this.getType( varying.type );
+
+				if ( varying.needsInterpolation ) {
+
+					const flat = type.includes( 'int' ) || type.includes( 'uv' ) || type.includes( 'iv' ) ? 'flat ' : '';
+
+					snippet += `${flat} out ${type} ${varying.name};\n`;
+
+				} else {
+
+					snippet += `${type} ${varying.name};\n`; // generate variable (no varying required)
+
+				}
 
 			}
 
@@ -603,18 +813,33 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Returns the vertex index builtin.
+	 *
+	 * @return {String} The vertex index.
+	 */
 	getVertexIndex() {
 
 		return 'uint( gl_VertexID )';
 
 	}
 
+	/**
+	 * Returns the instance index builtin.
+	 *
+	 * @return {String} The instance index.
+	 */
 	getInstanceIndex() {
 
 		return 'uint( gl_InstanceID )';
 
 	}
 
+	/**
+	 * Returns the invocation local index builtin.
+	 *
+	 * @return {String} The invocation local index.
+	 */
 	getInvocationLocalIndex() {
 
 		const workgroupSize = this.object.workgroupSize;
@@ -625,6 +850,11 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Returns the draw index builtin.
+	 *
+	 * @return {String?} The drawIndex shader string. Returns `null` if `WEBGL_multi_draw` isn't supported by the device.
+	 */
 	getDrawIndex() {
 
 		const extensions = this.renderer.backend.extensions;
@@ -639,24 +869,46 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Returns the front facing builtin.
+	 *
+	 * @return {String} The front facing builtin.
+	 */
 	getFrontFacing() {
 
 		return 'gl_FrontFacing';
 
 	}
 
+	/**
+	 * Returns the frag coord builtin.
+	 *
+	 * @return {String} The frag coord builtin.
+	 */
 	getFragCoord() {
 
 		return 'gl_FragCoord.xy';
 
 	}
 
+	/**
+	 * Returns the frag depth builtin.
+	 *
+	 * @return {String} The frag depth builtin.
+	 */
 	getFragDepth() {
 
 		return 'gl_FragDepth';
 
 	}
 
+	/**
+	 * Enables the given extension.
+	 *
+	 * @param {String} name - The extension name.
+	 * @param {String} behavior - The extension behavior.
+	 * @param {String} [shaderStage=this.shaderStage] - The shader stage.
+	 */
 	enableExtension( name, behavior, shaderStage = this.shaderStage ) {
 
 		const map = this.extensions[ shaderStage ] || ( this.extensions[ shaderStage ] = new Map() );
@@ -672,6 +924,12 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Returns the enabled extensions of the given shader stage as a GLSL string.
+	 *
+	 * @param {String} shaderStage - The shader stage.
+	 * @return {String} The GLSL snippet that defines the enabled extensions.
+	 */
 	getExtensions( shaderStage ) {
 
 		const snippets = [];
@@ -705,12 +963,23 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Returns the clip distances builtin.
+	 *
+	 * @return {String} The clip distances builtin.
+	 */
 	getClipDistance() {
 
 		return 'gl_ClipDistance';
 
 	}
 
+	/**
+	 * Whether the requested feature is available or not.
+	 *
+	 * @param {String} name - The requested feature.
+	 * @return {Boolean} Whether the requested feature is supported or not.
+	 */
 	isAvailable( name ) {
 
 		let result = supports[ name ];
@@ -754,12 +1023,22 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Whether to flip texture data along its vertical axis or not.
+	 *
+	 * @return {Boolean} Returns always `true` in context of GLSL.
+	 */
 	isFlipY() {
 
 		return true;
 
 	}
 
+	/**
+	 * Enables hardware clipping.
+	 *
+	 * @param {String} planeCount - The clipping plane count.
+	 */
 	enableHardwareClipping( planeCount ) {
 
 		this.enableExtension( 'GL_ANGLE_clip_cull_distance', 'require' );
@@ -768,12 +1047,24 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Registers a transform in context of Transform Feedback.
+	 *
+	 * @param {String} varyingName - The varying name.
+	 * @param {AttributeNode} attributeNode - The attribute node.
+	 */
 	registerTransform( varyingName, attributeNode ) {
 
 		this.transforms.push( { varyingName, attributeNode } );
 
 	}
 
+	/**
+	 * Returns the transforms of the given shader stage as a GLSL string.
+	 *
+	 * @param {String} shaderStage - The shader stage.
+	 * @return {String} The GLSL snippet that defines the transforms.
+	 */
 	getTransforms( /* shaderStage  */ ) {
 
 		const transforms = this.transforms;
@@ -794,6 +1085,14 @@ ${ flowData.code }
 
 	}
 
+	/**
+	 * Returns a GLSL struct based on the given name and variables.
+	 *
+	 * @private
+	 * @param {String} name - The struct name.
+	 * @param {String} vars - The struct variables.
+	 * @return {String} The GLSL snippet representing a struct.
+	 */
 	_getGLSLUniformStruct( name, vars ) {
 
 		return `
@@ -803,6 +1102,13 @@ ${vars}
 
 	}
 
+	/**
+	 * Returns a GLSL vertex shader based on the given shader data.
+	 *
+	 * @private
+	 * @param {Object} shaderData - The shader data.
+	 * @return {String} The vertex shader.
+	 */
 	_getGLSLVertexCode( shaderData ) {
 
 		return `#version 300 es
@@ -845,6 +1151,13 @@ void main() {
 
 	}
 
+	/**
+	 * Returns a GLSL fragment shader based on the given shader data.
+	 *
+	 * @private
+	 * @param {Object} shaderData - The shader data.
+	 * @return {String} The vertex shader.
+	 */
 	_getGLSLFragmentCode( shaderData ) {
 
 		return `#version 300 es
@@ -863,6 +1176,7 @@ ${shaderData.varyings}
 // codes
 ${shaderData.codes}
 
+// structs
 ${shaderData.structs}
 
 void main() {
@@ -878,6 +1192,9 @@ void main() {
 
 	}
 
+	/**
+	 * Controls the code build of the shader stages.
+	 */
 	buildCode() {
 
 		const shadersData = this.material !== null ? { fragment: {}, vertex: {} } : { compute: {} };
@@ -958,6 +1275,19 @@ void main() {
 
 	}
 
+	/**
+	 * This method is one of the more important ones since it's responsible
+	 * for generating a matching binding instance for the given uniform node.
+	 *
+	 * These bindings are later used in the renderer to create bind groups
+	 * and layouts.
+	 *
+	 * @param {UniformNode} node - The uniform node.
+	 * @param {String} type - The node data type.
+	 * @param {String} shaderStage - The shader stage.
+	 * @param {String?} [name=null] - An optional uniform name.
+	 * @return {NodeUniform} The node uniform object.
+	 */
 	getUniformFromNode( node, type, shaderStage, name = null ) {
 
 		const uniformNode = super.getUniformFromNode( node, type, shaderStage, name );

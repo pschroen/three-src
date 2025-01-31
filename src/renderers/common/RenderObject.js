@@ -1,4 +1,4 @@
-import { hashString } from '../../nodes/core/NodeUtils.js';
+import { hash, hashString } from '../../nodes/core/NodeUtils.js';
 
 let _id = 0;
 
@@ -54,7 +54,7 @@ function getKeys( obj ) {
  *
  * @private
  */
-export default class RenderObject {
+class RenderObject {
 
 	/**
 	 * Constructs a new render object.
@@ -179,6 +179,16 @@ export default class RenderObject {
 		 * @default null
 		 */
 		this.pipeline = null;
+
+		/**
+		 * Only relevant for objects using
+		 * multiple materials. This represents a group entry
+		 * from the respective `BufferGeometry`.
+		 *
+		 * @type {{start: Number, count: Number}?}
+		 * @default null
+		 */
+		this.group = null;
 
 		/**
 		 * An array holding the vertex buffers which can
@@ -336,7 +346,7 @@ export default class RenderObject {
 	/**
 	 * Returns the node builder state of this render object.
 	 *
-	 * @return {NodeBuilderState} The node buider state.
+	 * @return {NodeBuilderState} The node builder state.
 	 */
 	getNodeBuilderState() {
 
@@ -351,7 +361,7 @@ export default class RenderObject {
 	 */
 	getMonitor() {
 
-		return this._monitor || ( this._monitor = this.getNodeBuilderState().monitor );
+		return this._monitor || ( this._monitor = this.getNodeBuilderState().observer );
 
 	}
 
@@ -363,6 +373,26 @@ export default class RenderObject {
 	getBindings() {
 
 		return this._bindings || ( this._bindings = this.getNodeBuilderState().createBindings() );
+
+	}
+
+	/**
+	 * Returns a binding group by group name of this render object.
+	 *
+	 * @param {String} name - The name of the binding group.
+	 * @return {BindGroup?} The bindings.
+	 */
+	getBindingGroup( name ) {
+
+		for ( const bindingGroup of this.getBindings() ) {
+
+			if ( bindingGroup.name === name ) {
+
+				return bindingGroup;
+
+			}
+
+		}
 
 	}
 
@@ -558,6 +588,26 @@ export default class RenderObject {
 
 		}
 
+		// structural equality isn't sufficient for morph targets since the
+		// data are maintained in textures. only if the targets are all equal
+		// the texture and thus the instance of `MorphNode` can be shared.
+
+		for ( const name of Object.keys( geometry.morphAttributes ).sort() ) {
+
+			const targets = geometry.morphAttributes[ name ];
+
+			cacheKey += 'morph-' + name + ',';
+
+			for ( let i = 0, l = targets.length; i < l; i ++ ) {
+
+				const attribute = targets[ i ];
+
+				cacheKey += attribute.id + ',';
+
+			}
+
+		}
+
 		if ( geometry.index ) {
 
 			cacheKey += 'index,';
@@ -573,7 +623,7 @@ export default class RenderObject {
 	 *
 	 * The material cache key is part of the render object cache key.
 	 *
-	 * @return {String} The material cache key.
+	 * @return {Number} The material cache key.
 	 */
 	getMaterialCacheKey() {
 
@@ -641,12 +691,6 @@ export default class RenderObject {
 
 		}
 
-		if ( object.morphTargetInfluences ) {
-
-			cacheKey += object.morphTargetInfluences.length + ',';
-
-		}
-
 		if ( object.isBatchedMesh ) {
 
 			cacheKey += object._matricesTexture.uuid + ',';
@@ -696,7 +740,7 @@ export default class RenderObject {
 	 * `RenderObjects.get()`. The render object's NodeMaterialObserver is then used to detect
 	 * a need for a refresh due to material, geometry or object related value changes.
 	 *
-	 * TODO: Investigate if it's possible to merge boths steps so there is only a single place
+	 * TODO: Investigate if it's possible to merge both steps so there is only a single place
 	 * that performs the 'needsUpdate' check.
 	 *
 	 * @type {Boolean}
@@ -711,17 +755,30 @@ export default class RenderObject {
 	/**
 	 * Returns the dynamic cache key which represents a key that is computed per draw command.
 	 *
-	 * @return {String} The cache key.
+	 * @return {Number} The cache key.
 	 */
 	getDynamicCacheKey() {
 
-		// Environment Nodes Cache Key
+		let cacheKey = 0;
 
-		let cacheKey = this._nodes.getCacheKey( this.scene, this.lightsNode );
+		// `Nodes.getCacheKey()` returns an environment cache key which is not relevant when
+		// the renderer is inside a shadow pass.
+
+		if ( this.material.isShadowPassMaterial !== true ) {
+
+			cacheKey = this._nodes.getCacheKey( this.scene, this.lightsNode );
+
+		}
+
+		if ( this.camera.isArrayCamera ) {
+
+			cacheKey = hash( cacheKey, this.camera.cameras.length );
+
+		}
 
 		if ( this.object.receiveShadow ) {
 
-			cacheKey += 1;
+			cacheKey = hash( cacheKey, 1 );
 
 		}
 
@@ -732,7 +789,7 @@ export default class RenderObject {
 	/**
 	 * Returns the render object's cache key.
 	 *
-	 * @return {String} The cache key.
+	 * @return {Number} The cache key.
 	 */
 	getCacheKey() {
 
@@ -752,3 +809,5 @@ export default class RenderObject {
 	}
 
 }
+
+export default RenderObject;

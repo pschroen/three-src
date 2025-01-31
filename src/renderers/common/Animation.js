@@ -45,7 +45,7 @@ class Animation {
 		this._animationLoop = null;
 
 		/**
-		 * The requestId whic is returned from the `requestAnimationFrame()` call.
+		 * The requestId which is returned from the `requestAnimationFrame()` call.
 		 * Can be used to cancel the stop the animation loop.
 		 *
 		 * @type {Number?}
@@ -90,6 +90,17 @@ class Animation {
 	}
 
 	/**
+	 * Returns the user-level animation loop.
+	 *
+	 * @return {Function} The animation loop.
+	 */
+	getAnimationLoop() {
+
+		return this._animationLoop;
+
+	}
+
+	/**
 	 * Defines the user-level animation loop.
 	 *
 	 * @param {Function} callback - The animation loop.
@@ -97,6 +108,17 @@ class Animation {
 	setAnimationLoop( callback ) {
 
 		this._animationLoop = callback;
+
+	}
+
+	/**
+	 * Returns the animation context.
+	 *
+	 * @return {Window|XRSession} The animation context.
+	 */
+	getContext() {
+
+		return this._context;
 
 	}
 

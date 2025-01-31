@@ -55,7 +55,7 @@ class Pipelines extends DataMap {
 
 		/**
 		 * This dictionary maintains for each shader stage type (vertex,
-		 * fragment and compute) the progammable stage objects which
+		 * fragment and compute) the programmable stage objects which
 		 * represent the actual shader code.
 		 *
 		 * @type {Object<String,Map>}
@@ -343,7 +343,7 @@ class Pipelines extends DataMap {
 	 * @param {ProgrammableStage} stageVertex - The programmable stage representing the vertex shader.
 	 * @param {ProgrammableStage} stageFragment - The programmable stage representing the fragment shader.
 	 * @param {String} cacheKey - The cache key.
-	 * @param {Array} promises - An array of compilation promises which is only relevant in context of `Renderer.compileAsync()`.
+	 * @param {Array<Promise>?} promises - An array of compilation promises which is only relevant in context of `Renderer.compileAsync()`.
 	 * @return {ComputePipeline} The compute pipeline.
 	 */
 	_getRenderPipeline( renderObject, stageVertex, stageFragment, cacheKey, promises ) {
@@ -419,7 +419,7 @@ class Pipelines extends DataMap {
 	 * Releases the shader program.
 	 *
 	 * @private
-	 * @param {Object} program - The shdaer program to release.
+	 * @param {Object} program - The shader program to release.
 	 */
 	_releaseProgram( program ) {
 

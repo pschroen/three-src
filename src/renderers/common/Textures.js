@@ -124,21 +124,28 @@ class Textures extends DataMap {
 
 		//
 
+
 		const options = { sampleCount };
 
-		for ( let i = 0; i < textures.length; i ++ ) {
+		// XR render targets require no texture updates
 
-			const texture = textures[ i ];
+		if ( renderTarget.isXRRenderTarget !== true ) {
 
-			if ( textureNeedsUpdate ) texture.needsUpdate = true;
+			for ( let i = 0; i < textures.length; i ++ ) {
 
-			this.updateTexture( texture, options );
+				const texture = textures[ i ];
 
-		}
+				if ( textureNeedsUpdate ) texture.needsUpdate = true;
 
-		if ( depthTexture ) {
+				this.updateTexture( texture, options );
 
-			this.updateTexture( depthTexture, options );
+			}
+
+			if ( depthTexture ) {
+
+				this.updateTexture( depthTexture, options );
+
+			}
 
 		}
 

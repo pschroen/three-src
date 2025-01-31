@@ -7,6 +7,8 @@ import { fromHalfFloat, toHalfFloat } from '../extras/DataUtils.js';
 const _vector = new Vector3();
 const _vector2 = new Vector2();
 
+let _id = 0;
+
 class BufferAttribute {
 
 	constructor( array, itemSize, normalized = false ) {
@@ -18,6 +20,8 @@ class BufferAttribute {
 		}
 
 		this.isBufferAttribute = true;
+
+		Object.defineProperty( this, 'id', { value: _id ++ } );
 
 		this.name = '';
 

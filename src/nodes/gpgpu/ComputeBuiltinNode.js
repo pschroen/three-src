@@ -205,6 +205,14 @@ export const numWorkgroups = computeBuiltin( 'numWorkgroups', 'uvec3' );
 export const workgroupId = computeBuiltin( 'workgroupId', 'uvec3' );
 
 /**
+ * TSL function for creating a `globalId` builtin node. A non-linearized 3-dimensional
+ * representation of the current invocation's position within a 3D global grid.
+ *
+ * @function
+ * @returns {ComputeBuiltinNode<uvec3>}
+ */
+export const globalId = computeBuiltin( 'globalId', 'uvec3' );
+/**
  * TSL function for creating a `localId` builtin node. A non-linearized 3-dimensional
  * representation of the current invocation's position within a 3D workgroup grid.
  *

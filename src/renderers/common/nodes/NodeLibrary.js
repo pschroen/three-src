@@ -23,7 +23,7 @@ class NodeLibrary {
 		/**
 		 * A map that maps materials to node materials.
 		 *
-		 * @type {WeakMap<String,NodeMaterial.constructor>}
+		 * @type {Map<String,NodeMaterial.constructor>}
 		 */
 		this.materialNodes = new Map();
 
@@ -31,7 +31,7 @@ class NodeLibrary {
 		 * A map that maps tone mapping techniques (constants)
 		 * to tone mapping node functions.
 		 *
-		 * @type {WeakMap<Number,Function>}
+		 * @type {Map<Number,Function>}
 		 */
 		this.toneMappingNodes = new Map();
 
@@ -98,7 +98,7 @@ class NodeLibrary {
 	/**
 	 * Returns a node material class definition for a material type.
 	 *
-	 * @param {Sring} materialType - The material type.
+	 * @param {String} materialType - The material type.
 	 * @return {NodeMaterial.constructor?} The node material class definition. Returns `null` if no node material is found.
 	 */
 	getMaterialNodeClass( materialType ) {
@@ -111,7 +111,7 @@ class NodeLibrary {
 	 * Adds a node material class definition for a given material type.
 	 *
 	 * @param {NodeMaterial.constructor} materialNodeClass - The node material class definition.
-	 * @param {Sring} materialClassType - The material type.
+	 * @param {String} materialClassType - The material type.
 	 */
 	addMaterial( materialNodeClass, materialClassType ) {
 
@@ -147,7 +147,7 @@ class NodeLibrary {
 	 * Adds a node class definition for the given type to the provided type library.
 	 *
 	 * @param {Any} nodeClass - The node class definition.
-	 * @param {String} type - The object type.
+	 * @param {Number|String} type - The object type.
 	 * @param {Map} library - The type library.
 	 */
 	addType( nodeClass, type, library ) {

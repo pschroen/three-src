@@ -6,16 +6,46 @@ import {
 	OneMinusSrcColorFactor, OneMinusSrcAlphaFactor, OneMinusDstColorFactor, OneMinusDstAlphaFactor,
 	NeverDepth, AlwaysDepth, LessDepth, LessEqualDepth, EqualDepth, GreaterEqualDepth, GreaterDepth, NotEqualDepth
 } from '../../../constants.js';
+import { Vector4 } from '../../../math/Vector4.js';
 
-let initialized = false, equationToGL, factorToGL;
+let equationToGL, factorToGL;
 
+/**
+ * A WebGL 2 backend utility module for managing the WebGL state.
+ *
+ * The major goal of this module is to reduce the number of state changes
+ * by caching the WEbGL state with a series of variables. In this way, the
+ * renderer only executes state change commands when necessary which
+ * improves the overall performance.
+ *
+ * @private
+ */
 class WebGLState {
 
+	/**
+	 * Constructs a new utility object.
+	 *
+	 * @param {WebGLBackend} backend - The WebGL 2 backend.
+	 */
 	constructor( backend ) {
 
+		/**
+		 * A reference to the WebGL 2 backend.
+		 *
+		 * @type {WebGLBackend}
+		 */
 		this.backend = backend;
 
+		/**
+		 * A reference to the rendering context.
+		 *
+		 * @type {WebGL2RenderingContext}
+		 */
 		this.gl = this.backend.gl;
+
+		// Below properties are intended to cache
+		// the WebGL state and are not explicitly
+		// documented for convenience reasons.
 
 		this.enabled = {};
 		this.currentFlipSided = null;
@@ -51,17 +81,19 @@ class WebGLState {
 		this.currentBoundTextures = {};
 		this.currentBoundBufferBases = {};
 
-		if ( initialized === false ) {
 
-			this._init( this.gl );
-
-			initialized = true;
-
-		}
+		this._init();
 
 	}
 
-	_init( gl ) {
+	/**
+	 * Inits the state of the utility.
+	 *
+	 * @private
+	 */
+	_init() {
+
+		const gl = this.gl;
 
 		// Store only WebGL constants here.
 
@@ -85,8 +117,24 @@ class WebGLState {
 			[ OneMinusDstAlphaFactor ]: gl.ONE_MINUS_DST_ALPHA
 		};
 
+		const scissorParam = gl.getParameter( gl.SCISSOR_BOX );
+		const viewportParam = gl.getParameter( gl.VIEWPORT );
+
+		this.currentScissor = new Vector4().fromArray( scissorParam );
+		this.currentViewport = new Vector4().fromArray( viewportParam );
+
+		this._tempVec4 = new Vector4();
+
 	}
 
+	/**
+	 * Enables the given WebGL capability.
+	 *
+	 * This method caches the capability state so
+	 * `gl.enable()` is only called when necessary.
+	 *
+	 * @param {GLenum} id - The capability to enable.
+	 */
 	enable( id ) {
 
 		const { enabled } = this;
@@ -100,6 +148,14 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Disables the given WebGL capability.
+	 *
+	 * This method caches the capability state so
+	 * `gl.disable()` is only called when necessary.
+	 *
+	 * @param {GLenum} id - The capability to enable.
+	 */
 	disable( id ) {
 
 		const { enabled } = this;
@@ -113,6 +169,15 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Specifies whether polygons are front- or back-facing
+	 * by setting the winding orientation.
+	 *
+	 * This method caches the state so `gl.frontFace()` is only
+	 * called when necessary.
+	 *
+	 * @param {Boolean} flipSided - Whether triangles flipped their sides or not.
+	 */
 	setFlipSided( flipSided ) {
 
 		if ( this.currentFlipSided !== flipSided ) {
@@ -135,6 +200,15 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Specifies whether or not front- and/or back-facing
+	 * polygons can be culled.
+	 *
+	 * This method caches the state so `gl.cullFace()` is only
+	 * called when necessary.
+	 *
+	 * @param {Number} cullFace - Defines which polygons are candidates for culling.
+	 */
 	setCullFace( cullFace ) {
 
 		const { gl } = this;
@@ -171,6 +245,14 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Specifies the width of line primitives.
+	 *
+	 * This method caches the state so `gl.lineWidth()` is only
+	 * called when necessary.
+	 *
+	 * @param {Number} width - The line width.
+	 */
 	setLineWidth( width ) {
 
 		const { currentLineWidth, gl } = this;
@@ -185,7 +267,21 @@ class WebGLState {
 
 	}
 
-
+	/**
+	 * Defines the blending.
+	 *
+	 * This method caches the state so `gl.blendEquation()`, `gl.blendEquationSeparate()`,
+	 * `gl.blendFunc()` and  `gl.blendFuncSeparate()` are only called when necessary.
+	 *
+	 * @param {Number} blending - The blending type.
+	 * @param {Number} blendEquation - The blending equation.
+	 * @param {Number} blendSrc - Only relevant for custom blending. The RGB source blending factor.
+	 * @param {Number} blendDst - Only relevant for custom blending. The RGB destination blending factor.
+	 * @param {Number} blendEquationAlpha - Only relevant for custom blending. The blending equation for alpha.
+	 * @param {Number} blendSrcAlpha - Only relevant for custom blending. The alpha source blending factor.
+	 * @param {Number} blendDstAlpha - Only relevant for custom blending. The alpha destination blending factor.
+	 * @param {Boolean} premultipliedAlpha - Whether premultiplied alpha is enabled or not.
+	 */
 	setBlending( blending, blendEquation, blendSrc, blendDst, blendEquationAlpha, blendSrcAlpha, blendDstAlpha, premultipliedAlpha ) {
 
 		const { gl } = this;
@@ -322,6 +418,15 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Specifies whether colors can be written when rendering
+	 * into a framebuffer or not.
+	 *
+	 * This method caches the state so `gl.colorMask()` is only
+	 * called when necessary.
+	 *
+	 * @param {Boolean} colorMask - The color mask.
+	 */
 	setColorMask( colorMask ) {
 
 		if ( this.currentColorMask !== colorMask ) {
@@ -333,6 +438,11 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Specifies whether the depth test is enabled or not.
+	 *
+	 * @param {Boolean} depthTest - Whether the depth test is enabled or not.
+	 */
 	setDepthTest( depthTest ) {
 
 		const { gl } = this;
@@ -349,6 +459,15 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Specifies whether depth values can be written when rendering
+	 * into a framebuffer or not.
+	 *
+	 * This method caches the state so `gl.depthMask()` is only
+	 * called when necessary.
+	 *
+	 * @param {Boolean} depthMask - The depth mask.
+	 */
 	setDepthMask( depthMask ) {
 
 		if ( this.currentDepthMask !== depthMask ) {
@@ -360,6 +479,14 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Specifies the depth compare function.
+	 *
+	 * This method caches the state so `gl.depthFunc()` is only
+	 * called when necessary.
+	 *
+	 * @param {Number} depthFunc - The depth compare function.
+	 */
 	setDepthFunc( depthFunc ) {
 
 		if ( this.currentDepthFunc !== depthFunc ) {
@@ -420,6 +547,80 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Specifies the viewport.
+	 *
+	 * @param {Number} x - The x-coordinate of the lower left corner of the viewport.
+	 * @param {Number} y - The y-coordinate of the lower left corner of the viewport.
+	 * @param {Number} width - The width of the viewport.
+	 * @param {Number} height - The height of the viewport.
+	 *
+	 */
+	scissor( x, y, width, height ) {
+
+		const scissor = this._tempVec4.set( x, y, width, height );
+
+		if ( this.currentScissor.equals( scissor ) === false ) {
+
+			const { gl } = this;
+
+			gl.scissor( scissor.x, scissor.y, scissor.z, scissor.w );
+			this.currentScissor.copy( scissor );
+
+		}
+
+	}
+
+	/**
+	 * Specifies the viewport.
+	 *
+	 * @param {Number} x - The x-coordinate of the lower left corner of the viewport.
+	 * @param {Number} y - The y-coordinate of the lower left corner of the viewport.
+	 * @param {Number} width - The width of the viewport.
+	 * @param {Number} height - The height of the viewport.
+	 *
+	 */
+	viewport( x, y, width, height ) {
+
+		const viewport = this._tempVec4.set( x, y, width, height );
+
+		if ( this.currentViewport.equals( viewport ) === false ) {
+
+			const { gl } = this;
+
+			gl.viewport( viewport.x, viewport.y, viewport.z, viewport.w );
+			this.currentViewport.copy( viewport );
+
+		}
+
+	}
+
+	/**
+	 * Defines the scissor test.
+	 *
+	 * @param {Boolean} boolean - Whether the scissor test should be enabled or not.
+	 */
+	setScissorTest( boolean ) {
+
+		const gl = this.gl;
+
+		if ( boolean ) {
+
+			gl.enable( gl.SCISSOR_TEST );
+
+		} else {
+
+			gl.disable( gl.SCISSOR_TEST );
+
+		}
+
+	}
+
+	/**
+	 * Specifies whether the stencil test is enabled or not.
+	 *
+	 * @param {Boolean} stencilTest - Whether the stencil test is enabled or not.
+	 */
 	setStencilTest( stencilTest ) {
 
 		const { gl } = this;
@@ -436,6 +637,15 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Specifies whether stencil values can be written when rendering
+	 * into a framebuffer or not.
+	 *
+	 * This method caches the state so `gl.stencilMask()` is only
+	 * called when necessary.
+	 *
+	 * @param {Boolean} stencilMask - The stencil mask.
+	 */
 	setStencilMask( stencilMask ) {
 
 		if ( this.currentStencilMask !== stencilMask ) {
@@ -447,6 +657,16 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Specifies whether the stencil test functions.
+	 *
+	 * This method caches the state so `gl.stencilFunc()` is only
+	 * called when necessary.
+	 *
+	 * @param {Number} stencilFunc - The stencil compare function.
+	 * @param {Number} stencilRef - The reference value for the stencil test.
+	 * @param {Number} stencilMask - A bit-wise mask that is used to AND the reference value and the stored stencil value when the test is done.
+	 */
 	setStencilFunc( stencilFunc, stencilRef, stencilMask ) {
 
 		if ( this.currentStencilFunc !== stencilFunc ||
@@ -463,6 +683,17 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Specifies whether the stencil test operation.
+	 *
+	 * This method caches the state so `gl.stencilOp()` is only
+	 * called when necessary.
+	 *
+	 * @param {Number} stencilFail - The function to use when the stencil test fails.
+	 * @param {Number} stencilZFail - The function to use when the stencil test passes, but the depth test fail.
+	 * @param {Number} stencilZPass - The function to use when both the stencil test and the depth test pass,
+	 * or when the stencil test passes and there is no depth buffer or depth testing is disabled.
+	 */
 	setStencilOp( stencilFail, stencilZFail, stencilZPass ) {
 
 		if ( this.currentStencilFail !== stencilFail ||
@@ -479,6 +710,13 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Configures the WebGL state for the given material.
+	 *
+	 * @param {Material} material - The material to configure the state for.
+	 * @param {Number} frontFaceCW - Whether the front faces are counter-clockwise or not.
+	 * @param {Number} hardwareClippingPlanes - The number of hardware clipping planes.
+	 */
 	setMaterial( material, frontFaceCW, hardwareClippingPlanes ) {
 
 		const { gl } = this;
@@ -543,6 +781,16 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Specifies the polygon offset.
+	 *
+	 * This method caches the state so `gl.polygonOffset()` is only
+	 * called when necessary.
+	 *
+	 * @param {Boolean} polygonOffset - Whether polygon offset is enabled or not.
+	 * @param {Number} factor - The scale factor for the variable depth offset for each polygon.
+	 * @param {Number} units - The multiplier by which an implementation-specific value is multiplied with to create a constant depth offset.
+	 */
 	setPolygonOffset( polygonOffset, factor, units ) {
 
 		const { gl } = this;
@@ -568,6 +816,15 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Defines the usage of the given WebGL program.
+	 *
+	 * This method caches the state so `gl.useProgram()` is only
+	 * called when necessary.
+	 *
+	 * @param {WebGLProgram} program - The WebGL program to use.
+	 * @return {Boolean} Whether a program change has been executed or not.
+	 */
 	useProgram( program ) {
 
 		if ( this.currentProgram !== program ) {
@@ -587,6 +844,16 @@ class WebGLState {
 	// framebuffer
 
 
+	/**
+	 * Binds the given framebuffer.
+	 *
+	 * This method caches the state so `gl.bindFramebuffer()` is only
+	 * called when necessary.
+	 *
+	 * @param {Number} target - The binding point (target).
+	 * @param {WebGLFramebuffer} framebuffer - The WebGL framebuffer to bind.
+	 * @return {Boolean} Whether a bind has been executed or not.
+	 */
 	bindFramebuffer( target, framebuffer ) {
 
 		const { gl, currentBoundFramebuffers } = this;
@@ -619,6 +886,16 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Defines draw buffers to which fragment colors are written into.
+	 * Configures the MRT setup of custom framebuffers.
+	 *
+	 * This method caches the state so `gl.drawBuffers()` is only
+	 * called when necessary.
+	 *
+	 * @param {RenderContext} renderContext - The render context.
+	 * @param {WebGLFramebuffer} framebuffer - The WebGL framebuffer.
+	 */
 	drawBuffers( renderContext, framebuffer ) {
 
 		const { gl } = this;
@@ -679,6 +956,14 @@ class WebGLState {
 
 	// texture
 
+	/**
+	 * Makes the given texture unit active.
+	 *
+	 * This method caches the state so `gl.activeTexture()` is only
+	 * called when necessary.
+	 *
+	 * @param {Number} webglSlot - The texture unit to make active.
+	 */
 	activeTexture( webglSlot ) {
 
 		const { gl, currentTextureSlot, maxTextures } = this;
@@ -694,6 +979,16 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Binds the given WebGL texture to a target.
+	 *
+	 * This method caches the state so `gl.bindTexture()` is only
+	 * called when necessary.
+	 *
+	 * @param {Number} webglType - The binding point (target).
+	 * @param {WebGLTexture} webglTexture - The WebGL texture to bind.
+	 * @param {Number} webglSlot - The texture.
+	 */
 	bindTexture( webglType, webglTexture, webglSlot ) {
 
 		const { gl, currentTextureSlot, currentBoundTextures, maxTextures } = this;
@@ -739,6 +1034,17 @@ class WebGLState {
 
 	}
 
+	/**
+	 * Binds a given WebGL buffer to a given binding point (target) at a given index.
+	 *
+	 * This method caches the state so `gl.bindBufferBase()` is only
+	 * called when necessary.
+	 *
+	 * @param {Number} target - The target for the bind operation.
+	 * @param {Number} index - The index of the target.
+	 * @param {WebGLBuffer} buffer - The WebGL buffer.
+	 * @return {Boolean} Whether a bind has been executed or not.
+	 */
 	bindBufferBase( target, index, buffer ) {
 
 		const { gl } = this;
@@ -759,6 +1065,12 @@ class WebGLState {
 	}
 
 
+	/**
+	 * Unbinds the current bound texture.
+	 *
+	 * This method caches the state so `gl.bindTexture()` is only
+	 * called when necessary.
+	 */
 	unbindTexture() {
 
 		const { gl, currentTextureSlot, currentBoundTextures } = this;

@@ -343,13 +343,19 @@ export default UniformArrayNode;
  *
  * @function
  * @param {Array<Any>} values - Array-like data.
- * @param {String} nodeType - The data type of the array elements.
+ * @param {String?} nodeType - The data type of the array elements.
  * @returns {UniformArrayNode}
  */
 export const uniformArray = ( values, nodeType ) => nodeObject( new UniformArrayNode( values, nodeType ) );
 
-//
-
+/**
+ * @function
+ * @deprecated since r168. Use {@link uniformArray} instead.
+ *
+ * @param {Array<Any>} values - Array-like data.
+ * @param {String} nodeType - The data type of the array elements.
+ * @returns {UniformArrayNode}
+ */
 export const uniforms = ( values, nodeType ) => { // @deprecated, r168
 
 	console.warn( 'TSL.UniformArrayNode: uniforms() has been renamed to uniformArray().' );
