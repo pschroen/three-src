@@ -2,8 +2,6 @@
 import Node from './Node.js';
 import { getLengthFromType } from './NodeUtils.js';
 
-/** @module StructTypeNode **/
-
 /**
  * Generates a layout for struct members.
  * This function takes an object representing struct members and returns an array of member layouts.
@@ -64,7 +62,7 @@ class StructTypeNode extends Node {
 		/**
 		 * The name of the struct.
 		 *
-		 * @type {String}
+		 * @type {string}
 		 * @default null
 		 */
 		this.name = name;
@@ -72,7 +70,7 @@ class StructTypeNode extends Node {
 		/**
 		 * This flag can be used for type testing.
 		 *
-		 * @type {Boolean}
+		 * @type {boolean}
 		 * @readonly
 		 * @default true
 		 */
@@ -84,7 +82,7 @@ class StructTypeNode extends Node {
 	 * Returns the length of the struct.
 	 * The length is calculated by summing the lengths of the struct's members.
 	 *
-	 * @returns {Number} The length of the struct.
+	 * @returns {number} The length of the struct.
 	 */
 	getLength() {
 
@@ -113,6 +111,12 @@ class StructTypeNode extends Node {
 		const structType = builder.getStructTypeFromNode( this, this.membersLayout, this.name );
 
 		return structType.name;
+
+	}
+
+	setup( builder ) {
+
+		builder.addInclude( this );
 
 	}
 

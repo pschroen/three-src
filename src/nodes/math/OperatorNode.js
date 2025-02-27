@@ -1,8 +1,6 @@
 import TempNode from '../core/TempNode.js';
 import { addMethodChaining, nodeProxy } from '../tsl/TSLCore.js';
 
-/** @module OperatorNode **/
-
 /**
  * This node represents basic mathematical and logical operations like addition,
  * subtraction or comparisons (e.g. `equal()`).
@@ -20,7 +18,7 @@ class OperatorNode extends TempNode {
 	/**
 	 * Constructs a new operator node.
 	 *
-	 * @param {String} op - The operator.
+	 * @param {string} op - The operator.
 	 * @param {Node} aNode - The first input.
 	 * @param {Node} bNode - The second input.
 	 * @param {...Node} params - Additional input parameters.
@@ -47,7 +45,7 @@ class OperatorNode extends TempNode {
 		/**
 		 * The operator.
 		 *
-		 * @type {String}
+		 * @type {string}
 		 */
 		this.op = op;
 
@@ -68,7 +66,7 @@ class OperatorNode extends TempNode {
 		/**
 		 * This flag can be used for type testing.
 		 *
-		 * @type {Boolean}
+		 * @type {boolean}
 		 * @readonly
 		 * @default true
 		 */
@@ -81,8 +79,8 @@ class OperatorNode extends TempNode {
 	 * and the input node types.
 	 *
 	 * @param {NodeBuilder} builder - The current node builder.
-	 * @param {String} output - The current output string.
-	 * @return {String} The node type.
+	 * @param {string} output - The current output string.
+	 * @return {string} The node type.
 	 */
 	getNodeType( builder, output ) {
 
@@ -380,6 +378,7 @@ export default OperatorNode;
 /**
  * Returns the addition of two or more value.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -391,6 +390,7 @@ export const add = nodeProxy( OperatorNode, '+' );
 /**
  * Returns the subtraction of two or more value.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -402,6 +402,7 @@ export const sub = nodeProxy( OperatorNode, '-' );
 /**
  * Returns the multiplication of two or more value.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -413,6 +414,7 @@ export const mul = nodeProxy( OperatorNode, '*' );
 /**
  * Returns the division of two or more value.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -424,6 +426,7 @@ export const div = nodeProxy( OperatorNode, '/' );
 /**
  * Computes the remainder of dividing the first node by the second, for integer values.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -434,6 +437,7 @@ export const modInt = nodeProxy( OperatorNode, '%' );
 /**
  * Checks if two nodes are equal.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -444,6 +448,7 @@ export const equal = nodeProxy( OperatorNode, '==' );
 /**
  * Checks if two nodes are not equal.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -454,6 +459,7 @@ export const notEqual = nodeProxy( OperatorNode, '!=' );
 /**
  * Checks if the first node is less than the second.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -464,6 +470,7 @@ export const lessThan = nodeProxy( OperatorNode, '<' );
 /**
  * Checks if the first node is greater than the second.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -474,6 +481,7 @@ export const greaterThan = nodeProxy( OperatorNode, '>' );
 /**
  * Checks if the first node is less than or equal to the second.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -484,6 +492,7 @@ export const lessThanEqual = nodeProxy( OperatorNode, '<=' );
 /**
  * Checks if the first node is greater than or equal to the second.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -494,6 +503,7 @@ export const greaterThanEqual = nodeProxy( OperatorNode, '>=' );
 /**
  * Performs logical AND on two nodes.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -504,6 +514,7 @@ export const and = nodeProxy( OperatorNode, '&&' );
 /**
  * Performs logical OR on two nodes.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -514,6 +525,7 @@ export const or = nodeProxy( OperatorNode, '||' );
 /**
  * Performs logical NOT on a node.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -524,6 +536,7 @@ export const not = nodeProxy( OperatorNode, '!' );
 /**
  * Performs logical XOR on two nodes.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -534,6 +547,7 @@ export const xor = nodeProxy( OperatorNode, '^^' );
 /**
  * Performs bitwise AND on two nodes.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -544,6 +558,7 @@ export const bitAnd = nodeProxy( OperatorNode, '&' );
 /**
  * Performs bitwise NOT on a node.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -554,6 +569,7 @@ export const bitNot = nodeProxy( OperatorNode, '~' );
 /**
  * Performs bitwise OR on two nodes.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -564,6 +580,7 @@ export const bitOr = nodeProxy( OperatorNode, '|' );
 /**
  * Performs bitwise XOR on two nodes.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The first input.
  * @param {Node} bNode - The second input.
@@ -574,6 +591,7 @@ export const bitXor = nodeProxy( OperatorNode, '^' );
 /**
  * Shifts a node to the left.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The node to shift.
  * @param {Node} bNode - The value to shift.
@@ -584,6 +602,7 @@ export const shiftLeft = nodeProxy( OperatorNode, '<<' );
 /**
  * Shifts a node to the right.
  *
+ * @tsl
  * @function
  * @param {Node} aNode - The node to shift.
  * @param {Node} bNode - The value to shift.
@@ -614,6 +633,7 @@ addMethodChaining( 'shiftLeft', shiftLeft );
 addMethodChaining( 'shiftRight', shiftRight );
 
 /**
+ * @tsl
  * @function
  * @deprecated since r168. Use {@link modInt} instead.
  *

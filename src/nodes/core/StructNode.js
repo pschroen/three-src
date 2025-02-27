@@ -2,8 +2,6 @@ import Node from './Node.js';
 import StructTypeNode from './StructTypeNode.js';
 import { nodeObject } from '../tsl/TSLCore.js';
 
-/** @module StructNode **/
-
 /**
  * StructNode allows to create custom structures with multiple members.
  * This can also be used to define structures in attribute and uniform data.
@@ -74,6 +72,7 @@ export default StructNode;
 /**
  * TSL function for creating a struct node.
  *
+ * @tsl
  * @function
  * @param {Object} membersLayout - The layout of the struct members.
  * @param {string} [name=null] - The name of the struct.

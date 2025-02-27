@@ -1,8 +1,6 @@
 import { nodeProxy } from '../tsl/TSLBase.js';
 import ArrayElementNode from './ArrayElementNode.js';
 
-/** @module StorageArrayElementNode **/
-
 /**
  * This class enables element access on instances of {@link StorageBufferNode}.
  * In most cases, it is indirectly used when accessing elements with the
@@ -35,7 +33,7 @@ class StorageArrayElementNode extends ArrayElementNode {
 		/**
 		 * This flag can be used for type testing.
 		 *
-		 * @type {Boolean}
+		 * @type {boolean}
 		 * @readonly
 		 * @default true
 		 */
@@ -136,6 +134,7 @@ export default StorageArrayElementNode;
 /**
  * TSL function for creating a storage element node.
  *
+ * @tsl
  * @function
  * @param {StorageBufferNode} storageBufferNode - The storage buffer node.
  * @param {Node} indexNode - The index node that defines the element access.

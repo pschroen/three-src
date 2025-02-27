@@ -2,8 +2,6 @@ import Node from './Node.js';
 import { NodeShaderStage } from './constants.js';
 import { addMethodChaining, nodeProxy } from '../tsl/TSLCore.js';
 
-/** @module VaryingNode **/
-
 /**
  * Class for representing shader varyings as nodes. Varyings are create from
  * existing nodes like the following:
@@ -26,7 +24,7 @@ class VaryingNode extends Node {
 	 * Constructs a new varying node.
 	 *
 	 * @param {Node} node - The node for which a varying should be created.
-	 * @param {String?} name - The name of the varying in the shader.
+	 * @param {?string} name - The name of the varying in the shader.
 	 */
 	constructor( node, name = null ) {
 
@@ -43,7 +41,7 @@ class VaryingNode extends Node {
 		 * The name of the varying in the shader. If no name is defined,
 		 * the node system auto-generates one.
 		 *
-		 * @type {String?}
+		 * @type {?string}
 		 * @default null
 		 */
 		this.name = name;
@@ -51,7 +49,7 @@ class VaryingNode extends Node {
 		/**
 		 * This flag can be used for type testing.
 		 *
-		 * @type {Boolean}
+		 * @type {boolean}
 		 * @readonly
 		 * @default true
 		 */
@@ -63,7 +61,7 @@ class VaryingNode extends Node {
 	 * The method is overwritten so it always returns `true`.
 	 *
 	 * @param {NodeBuilder} builder - The current node builder.
-	 * @return {Boolean} Whether this node is global or not.
+	 * @return {boolean} Whether this node is global or not.
 	 */
 	isGlobal( /*builder*/ ) {
 
@@ -169,9 +167,10 @@ export default VaryingNode;
 /**
  * TSL function for creating a varying node.
  *
+ * @tsl
  * @function
  * @param {Node} node - The node for which a varying should be created.
- * @param {String?} name - The name of the varying in the shader.
+ * @param {?string} name - The name of the varying in the shader.
  * @returns {VaryingNode}
  */
 export const varying = nodeProxy( VaryingNode );
@@ -179,6 +178,7 @@ export const varying = nodeProxy( VaryingNode );
 /**
  * Computes a node in the vertex stage.
  *
+ * @tsl
  * @function
  * @param {Node} node - The node which should be executed in the vertex stage.
  * @returns {VaryingNode}

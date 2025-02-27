@@ -8,8 +8,6 @@ import { tangentLocal } from './Tangent.js';
 import { instanceIndex, drawIndex } from '../core/IndexNode.js';
 import { varyingProperty } from '../core/PropertyNode.js';
 
-/** @module BatchNode **/
-
 /**
  * This node implements the vertex shader logic which is required
  * when rendering 3D objects via batching. `BatchNode` must be used
@@ -44,7 +42,7 @@ class BatchNode extends Node {
 		/**
 		 * The batching index node.
 		 *
-		 * @type {IndexNode?}
+		 * @type {?IndexNode}
 		 * @default null
 		 */
 		this.batchingIdNode = null;
@@ -157,6 +155,7 @@ export default BatchNode;
 /**
  * TSL function for creating a batch node.
  *
+ * @tsl
  * @function
  * @param {BatchedMesh} batchMesh - A reference to batched mesh.
  * @returns {BatchNode}

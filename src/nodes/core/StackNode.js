@@ -2,8 +2,6 @@ import Node from './Node.js';
 import { select } from '../math/ConditionalNode.js';
 import { ShaderNode, nodeProxy, getCurrentStack, setCurrentStack } from '../tsl/TSLBase.js';
 
-/** @module StackNode **/
-
 /**
  * Stack is a helper for Nodes that need to produce stack-based code instead of continuous flow.
  * They are usually needed in cases like `If`, `Else`.
@@ -21,7 +19,7 @@ class StackNode extends Node {
 	/**
 	 * Constructs a new stack node.
 	 *
-	 * @param {StackNode?} [parent=null] - The parent stack node.
+	 * @param {?StackNode} [parent=null] - The parent stack node.
 	 */
 	constructor( parent = null ) {
 
@@ -37,7 +35,7 @@ class StackNode extends Node {
 		/**
 		 * The output node.
 		 *
-		 * @type {Node?}
+		 * @type {?Node}
 		 * @default null
 		 */
 		this.outputNode = null;
@@ -45,7 +43,7 @@ class StackNode extends Node {
 		/**
 		 * The parent stack node.
 		 *
-		 * @type {StackNode}
+		 * @type {?StackNode}
 		 * @default null
 		 */
 		this.parent = parent;
@@ -62,7 +60,7 @@ class StackNode extends Node {
 		/**
 		 * This flag can be used for type testing.
 		 *
-		 * @type {Boolean}
+		 * @type {boolean}
 		 * @readonly
 		 * @default true
 		 */
@@ -199,8 +197,9 @@ export default StackNode;
 /**
  * TSL function for creating a stack node.
  *
+ * @tsl
  * @function
- * @param {StackNode?} [parent=null] - The parent stack node.
+ * @param {?StackNode} [parent=null] - The parent stack node.
  * @returns {StackNode}
  */
 export const stack = nodeProxy( StackNode );

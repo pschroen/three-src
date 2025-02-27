@@ -14,8 +14,6 @@ import { Vector2 } from '../../math/Vector2.js';
 import { Vector4 } from '../../math/Vector4.js';
 import { FloatType } from '../../constants.js';
 
-/** @module MorphNode **/
-
 const _morphTextures = new WeakMap();
 const _morphVec4 = new Vector4();
 
@@ -198,7 +196,7 @@ class MorphNode extends Node {
 		/**
 		 * The update type overwritten since morph nodes are updated per object.
 		 *
-		 * @type {String}
+		 * @type {string}
 		 */
 		this.updateType = NodeUpdateType.OBJECT;
 
@@ -300,6 +298,7 @@ export default MorphNode;
 /**
  * TSL function for creating a morph node.
  *
+ * @tsl
  * @function
  * @param {Mesh} mesh - The mesh holding the morph targets.
  * @returns {MorphNode}

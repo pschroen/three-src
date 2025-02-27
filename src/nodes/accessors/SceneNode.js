@@ -9,8 +9,6 @@ import { reference } from './ReferenceNode.js';
 const _e1 = new Euler();
 const _m1 = new Matrix4();
 
-/** @module SceneNode **/
-
 /**
  * This module allows access to a collection of scene properties. The following predefined TSL objects
  * are available for easier use:
@@ -33,7 +31,7 @@ class SceneNode extends Node {
 	 * Constructs a new scene node.
 	 *
 	 * @param {('backgroundBlurriness'|'backgroundIntensity'|'backgroundRotation')} scope - The scope defines the type of scene property that is accessed.
-	 * @param {Scene?} [scene=null] - A reference to the scene.
+	 * @param {?Scene} [scene=null] - A reference to the scene.
 	 */
 	constructor( scope = SceneNode.BACKGROUND_BLURRINESS, scene = null ) {
 
@@ -49,7 +47,7 @@ class SceneNode extends Node {
 		/**
 		 * A reference to the scene that is going to be accessed.
 		 *
-		 * @type {Scene?}
+		 * @type {?Scene}
 		 * @default null
 		 */
 		this.scene = scene;
@@ -124,6 +122,7 @@ export default SceneNode;
 /**
  * TSL object that represents the scene's background blurriness.
  *
+ * @tsl
  * @type {SceneNode}
  */
 export const backgroundBlurriness = nodeImmutable( SceneNode, SceneNode.BACKGROUND_BLURRINESS );
@@ -131,6 +130,7 @@ export const backgroundBlurriness = nodeImmutable( SceneNode, SceneNode.BACKGROU
 /**
  * TSL object that represents the scene's background intensity.
  *
+ * @tsl
  * @type {SceneNode}
  */
 export const backgroundIntensity = nodeImmutable( SceneNode, SceneNode.BACKGROUND_INTENSITY );
@@ -138,6 +138,7 @@ export const backgroundIntensity = nodeImmutable( SceneNode, SceneNode.BACKGROUN
 /**
  * TSL object that represents the scene's background rotation.
  *
+ * @tsl
  * @type {SceneNode}
  */
 export const backgroundRotation = nodeImmutable( SceneNode, SceneNode.BACKGROUND_ROTATION );

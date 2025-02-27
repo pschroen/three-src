@@ -2,8 +2,6 @@ import TempNode from '../core/TempNode.js';
 import { positionWorldDirection } from '../accessors/Position.js';
 import { nodeProxy, vec2 } from '../tsl/TSLBase.js';
 
-/** @module EquirectUVNode **/
-
 /**
  * Can be used to compute texture coordinates for projecting an
  * equirectangular texture onto a mesh for using it as the scene's
@@ -59,6 +57,7 @@ export default EquirectUVNode;
 /**
  * TSL function for creating an equirect uv node.
  *
+ * @tsl
  * @function
  * @param {Node<vec3>} [dirNode=positionWorldDirection] - A direction vector for sampling which is by default `positionWorldDirection`.
  * @returns {EquirectUVNode}

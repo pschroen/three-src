@@ -35,7 +35,7 @@ class XRManager extends EventDispatcher {
 		/**
 		 * This flag globally enables XR rendering.
 		 *
-		 * @type {Boolean}
+		 * @type {boolean}
 		 * @default false
 		 */
 		this.enabled = false;
@@ -43,7 +43,7 @@ class XRManager extends EventDispatcher {
 		/**
 		 * Whether the XR device is currently presenting or not.
 		 *
-		 * @type {Boolean}
+		 * @type {boolean}
 		 * @default false
 		 * @readonly
 		 */
@@ -52,7 +52,7 @@ class XRManager extends EventDispatcher {
 		/**
 		 * Whether the XR camera should automatically be updated or not.
 		 *
-		 * @type {Boolean}
+		 * @type {boolean}
 		 * @default true
 		 */
 		this.cameraAutoUpdate = true;
@@ -105,7 +105,7 @@ class XRManager extends EventDispatcher {
 		 * The current near value of the XR camera.
 		 *
 		 * @private
-		 * @type {Number?}
+		 * @type {?number}
 		 * @default null
 		 */
 		this._currentDepthNear = null;
@@ -114,7 +114,7 @@ class XRManager extends EventDispatcher {
 		 * The current far value of the XR camera.
 		 *
 		 * @private
-		 * @type {Number?}
+		 * @type {?number}
 		 * @default null
 		 */
 		this._currentDepthFar = null;
@@ -137,20 +137,11 @@ class XRManager extends EventDispatcher {
 		this._controllerInputSources = [];
 
 		/**
-		 * The current render target of the renderer.
-		 *
-		 * @private
-		 * @type {RenderTarget?}
-		 * @default null
-		 */
-		this._currentRenderTarget = null;
-
-		/**
 		 * The XR render target that represents the rendering destination
 		 * during an active XR session.
 		 *
 		 * @private
-		 * @type {RenderTarget?}
+		 * @type {?RenderTarget}
 		 * @default null
 		 */
 		this._xrRenderTarget = null;
@@ -159,7 +150,7 @@ class XRManager extends EventDispatcher {
 		 * The current animation context.
 		 *
 		 * @private
-		 * @type {Window?}
+		 * @type {?Window}
 		 * @default null
 		 */
 		this._currentAnimationContext = null;
@@ -168,7 +159,7 @@ class XRManager extends EventDispatcher {
 		 * The current animation loop.
 		 *
 		 * @private
-		 * @type {Function?}
+		 * @type {?Function}
 		 * @default null
 		 */
 		this._currentAnimationLoop = null;
@@ -177,7 +168,7 @@ class XRManager extends EventDispatcher {
 		 * The current pixel ratio.
 		 *
 		 * @private
-		 * @type {Number?}
+		 * @type {?number}
 		 * @default null
 		 */
 		this._currentPixelRatio = null;
@@ -217,7 +208,7 @@ class XRManager extends EventDispatcher {
 
 		/**
 		 * The animation loop which is used as a replacement for the default
-		 * animation loop of the applicatio. It is only used when a XR session
+		 * animation loop of the application. It is only used when a XR session
 		 * is active.
 		 *
 		 * @private
@@ -229,7 +220,7 @@ class XRManager extends EventDispatcher {
 		 * The current XR reference space.
 		 *
 		 * @private
-		 * @type {XRReferenceSpace?}
+		 * @type {?XRReferenceSpace}
 		 * @default null
 		 */
 		this._referenceSpace = null;
@@ -238,7 +229,7 @@ class XRManager extends EventDispatcher {
 		 * The current XR reference space type.
 		 *
 		 * @private
-		 * @type {String}
+		 * @type {string}
 		 * @default 'local-floor'
 		 */
 		this._referenceSpaceType = 'local-floor';
@@ -247,7 +238,7 @@ class XRManager extends EventDispatcher {
 		 * A custom reference space defined by the application.
 		 *
 		 * @private
-		 * @type {XRReferenceSpace?}
+		 * @type {?XRReferenceSpace}
 		 * @default null
 		 */
 		this._customReferenceSpace = null;
@@ -256,7 +247,7 @@ class XRManager extends EventDispatcher {
 		 * The framebuffer scale factor.
 		 *
 		 * @private
-		 * @type {Number}
+		 * @type {number}
 		 * @default 1
 		 */
 		this._framebufferScaleFactor = 1;
@@ -265,7 +256,7 @@ class XRManager extends EventDispatcher {
 		 * The foveation factor.
 		 *
 		 * @private
-		 * @type {Number}
+		 * @type {number}
 		 * @default 1
 		 */
 		this._foveation = 1.0;
@@ -274,7 +265,7 @@ class XRManager extends EventDispatcher {
 		 * A reference to the current XR session.
 		 *
 		 * @private
-		 * @type {XRSession?}
+		 * @type {?XRSession}
 		 * @default null
 		 */
 		this._session = null;
@@ -283,7 +274,7 @@ class XRManager extends EventDispatcher {
 		 * A reference to the current XR base layer.
 		 *
 		 * @private
-		 * @type {XRWebGLLayer?}
+		 * @type {?XRWebGLLayer}
 		 * @default null
 		 */
 		this._glBaseLayer = null;
@@ -292,7 +283,7 @@ class XRManager extends EventDispatcher {
 		 * A reference to the current XR binding.
 		 *
 		 * @private
-		 * @type {XRWebGLBinding?}
+		 * @type {?XRWebGLBinding}
 		 * @default null
 		 */
 		this._glBinding = null;
@@ -301,7 +292,7 @@ class XRManager extends EventDispatcher {
 		 * A reference to the current XR projection layer.
 		 *
 		 * @private
-		 * @type {XRProjectionLayer?}
+		 * @type {?XRProjectionLayer}
 		 * @default null
 		 */
 		this._glProjLayer = null;
@@ -310,7 +301,7 @@ class XRManager extends EventDispatcher {
 		 * A reference to the current XR frame.
 		 *
 		 * @private
-		 * @type {XRFrame?}
+		 * @type {?XRFrame}
 		 * @default null
 		 */
 		this._xrFrame = null;
@@ -319,7 +310,7 @@ class XRManager extends EventDispatcher {
 		 * Whether to use the WebXR Layers API or not.
 		 *
 		 * @private
-		 * @type {Boolean}
+		 * @type {boolean}
 		 * @readonly
 		 */
 		this._useLayers = ( typeof XRWebGLBinding !== 'undefined' && 'createProjectionLayer' in XRWebGLBinding.prototype ); // eslint-disable-line compat/compat
@@ -331,7 +322,7 @@ class XRManager extends EventDispatcher {
 	 * of a XR controller in target ray space. The requested controller is defined
 	 * by the given index.
 	 *
-	 * @param {Number} index - The index of the XR controller.
+	 * @param {number} index - The index of the XR controller.
 	 * @return {Group} A group that represents the controller's transformation.
 	 */
 	getController( index ) {
@@ -347,7 +338,7 @@ class XRManager extends EventDispatcher {
 	 * of a XR controller in grip space. The requested controller is defined
 	 * by the given index.
 	 *
-	 * @param {Number} index - The index of the XR controller.
+	 * @param {number} index - The index of the XR controller.
 	 * @return {Group} A group that represents the controller's transformation.
 	 */
 	getControllerGrip( index ) {
@@ -363,7 +354,7 @@ class XRManager extends EventDispatcher {
 	 * of a XR controller in hand space. The requested controller is defined
 	 * by the given index.
 	 *
-	 * @param {Number} index - The index of the XR controller.
+	 * @param {number} index - The index of the XR controller.
 	 * @return {Group} A group that represents the controller's transformation.
 	 */
 	getHand( index ) {
@@ -377,7 +368,7 @@ class XRManager extends EventDispatcher {
 	/**
 	 * Returns the foveation value.
 	 *
-	 * @return {Number|undefined} The foveation value. Returns `undefined` if no base or projection layer is defined.
+	 * @return {number|undefined} The foveation value. Returns `undefined` if no base or projection layer is defined.
 	 */
 	getFoveation() {
 
@@ -394,7 +385,7 @@ class XRManager extends EventDispatcher {
 	/**
 	 * Sets the foveation value.
 	 *
-	 * @param {Number} foveation - A number in the range `[0,1]` where `0` means no foveation (full resolution)
+	 * @param {number} foveation - A number in the range `[0,1]` where `0` means no foveation (full resolution)
 	 * and `1` means maximum foveation (the edges render at lower resolution).
 	 */
 	setFoveation( foveation ) {
@@ -418,7 +409,7 @@ class XRManager extends EventDispatcher {
 	/**
 	 * Returns the framebuffer scale factor.
 	 *
-	 * @return {Number} The framebuffer scale factor.
+	 * @return {number} The framebuffer scale factor.
 	 */
 	getFramebufferScaleFactor() {
 
@@ -431,7 +422,7 @@ class XRManager extends EventDispatcher {
 	 *
 	 * This method can not be used during a XR session.
 	 *
-	 * @param {Number} factor - The framebuffer scale factor.
+	 * @param {number} factor - The framebuffer scale factor.
 	 */
 	setFramebufferScaleFactor( factor ) {
 
@@ -448,7 +439,7 @@ class XRManager extends EventDispatcher {
 	/**
 	 * Returns the reference space type.
 	 *
-	 * @return {String} The reference space type.
+	 * @return {string} The reference space type.
 	 */
 	getReferenceSpaceType() {
 
@@ -461,7 +452,7 @@ class XRManager extends EventDispatcher {
 	 *
 	 * This method can not be used during a XR session.
 	 *
-	 * @param {String} type - The reference space type.
+	 * @param {string} type - The reference space type.
 	 */
 	setReferenceSpaceType( type ) {
 
@@ -511,7 +502,7 @@ class XRManager extends EventDispatcher {
 	/**
 	 * Returns the environment blend mode from the current XR session.
 	 *
-	 * @return {('opaque'|'additive'|'alpha-blend')?} The environment blend mode. Returns `null` when used outside of a XR session.
+	 * @return {?('opaque'|'additive'|'alpha-blend')} The environment blend mode. Returns `null` when used outside of a XR session.
 	 */
 	getEnvironmentBlendMode() {
 
@@ -526,7 +517,7 @@ class XRManager extends EventDispatcher {
 	/**
 	 * Returns the current XR frame.
 	 *
-	 * @return {XRFrame?} The XR frame. Returns `null` when used outside a XR session.
+	 * @return {?XRFrame} The XR frame. Returns `null` when used outside a XR session.
 	 */
 	getFrame() {
 
@@ -537,7 +528,7 @@ class XRManager extends EventDispatcher {
 	/**
 	 * Returns the current XR session.
 	 *
-	 * @return {XRSession?} The XR session. Returns `null` when used outside a XR session.
+	 * @return {?XRSession} The XR session. Returns `null` when used outside a XR session.
 	 */
 	getSession() {
 
@@ -566,8 +557,6 @@ class XRManager extends EventDispatcher {
 		if ( session !== null ) {
 
 			if ( backend.isWebGPUBackend === true ) throw new Error( 'THREE.XRManager: XR is currently not supported with a WebGPU backend. Use WebGL by passing "{ forceWebGL: true }" to the constructor of the renderer.' );
-
-			this._currentRenderTarget = renderer.getRenderTarget();
 
 			session.addEventListener( 'select', this._onSessionEvent );
 			session.addEventListener( 'selectstart', this._onSessionEvent );
@@ -631,7 +620,8 @@ class XRManager extends EventDispatcher {
 						colorSpace: renderer.outputColorSpace,
 						depthTexture: new DepthTexture( glProjLayer.textureWidth, glProjLayer.textureHeight, depthType, undefined, undefined, undefined, undefined, undefined, undefined, depthFormat ),
 						stencilBuffer: renderer.stencil,
-						samples: renderer.samples
+						resolveDepthBuffer: ( glProjLayer.ignoreDepthValues === false ),
+						resolveStencilBuffer: ( glProjLayer.ignoreDepthValues === false ),
 					} );
 
 				this._xrRenderTarget.hasExternalTextures = true;
@@ -663,7 +653,9 @@ class XRManager extends EventDispatcher {
 						format: RGBAFormat,
 						type: UnsignedByteType,
 						colorSpace: renderer.outputColorSpace,
-						stencilBuffer: renderer.stencil
+						stencilBuffer: renderer.stencil,
+						resolveDepthBuffer: ( glBaseLayer.ignoreDepthValues === false ),
+						resolveStencilBuffer: ( glBaseLayer.ignoreDepthValues === false ),
 					}
 				);
 
@@ -764,7 +756,7 @@ class XRManager extends EventDispatcher {
 	 * Returns a WebXR controller for the given controller index.
 	 *
 	 * @private
-	 * @param {Number} index - The controller index.
+	 * @param {number} index - The controller index.
 	 * @return {WebXRController} The XR controller.
 	 */
 	_getController( index ) {
@@ -881,7 +873,7 @@ function updateCamera( camera, parent ) {
 }
 
 /**
- * Updates the given camera with the transfomration of the XR camera and parent object.
+ * Updates the given camera with the transformation of the XR camera and parent object.
  *
  * @inner
  * @param {Camera} camera - The camera to update.
@@ -972,7 +964,7 @@ function onSessionEnd() {
 	// restore framebuffer/rendering state
 
 	renderer.backend.setXRTarget( null );
-	renderer.setRenderTarget( this._currentRenderTarget );
+	renderer.setOutputRenderTarget( null );
 
 	this._session = null;
 	this._xrRenderTarget = null;
@@ -1159,7 +1151,7 @@ function onAnimationFrame( time, frame ) {
 
 		}
 
-		renderer.setRenderTarget( this._xrRenderTarget );
+		renderer.setOutputRenderTarget( this._xrRenderTarget );
 
 	}
 
