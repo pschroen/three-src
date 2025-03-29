@@ -247,7 +247,7 @@ export default ScriptableValueNode;
  *
  * @tsl
  * @function
- * @param {any} [value=null] - The value.
+ * @param {any} [value] - The value.
  * @returns {ScriptableValueNode}
  */
-export const scriptableValue = nodeProxy( ScriptableValueNode );
+export const scriptableValue = nodeProxy( ScriptableValueNode ).setParameterLength( 1 );

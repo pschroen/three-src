@@ -47,4 +47,4 @@ export default InstancedMeshNode;
  * @param {InstancedMesh} instancedMesh - The instancedMesh.
  * @returns {InstancedMeshNode}
  */
-export const instancedMesh = nodeProxy( InstancedMeshNode );
+export const instancedMesh = nodeProxy( InstancedMeshNode ).setParameterLength( 1 );

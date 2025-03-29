@@ -48,8 +48,8 @@ export default ViewportDepthTextureNode;
  *
  * @tsl
  * @function
- * @param {Node} [uvNode=screenUV] - The uv node.
+ * @param {?Node} [uvNode=screenUV] - The uv node.
  * @param {?Node} [levelNode=null] - The level node.
  * @returns {ViewportDepthTextureNode}
  */
-export const viewportDepthTexture = nodeProxy( ViewportDepthTextureNode );
+export const viewportDepthTexture = nodeProxy( ViewportDepthTextureNode ).setParameterLength( 0, 2 );

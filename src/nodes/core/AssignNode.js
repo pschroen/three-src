@@ -171,6 +171,6 @@ export default AssignNode;
  * @param {Node} sourceNode - The source type.
  * @returns {AssignNode}
  */
-export const assign = nodeProxy( AssignNode );
+export const assign = nodeProxy( AssignNode ).setParameterLength( 2 );
 
 addMethodChaining( 'assign', assign );

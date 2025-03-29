@@ -12,7 +12,7 @@ import { reference } from '../../nodes/accessors/ReferenceBaseNode.js';
 const _defaultValues = new SpriteMaterial();
 
 /**
- * Node material version of `SpriteMaterial`.
+ * Node material version of {@link SpriteMaterial}.
  *
  * @augments NodeMaterial
  */

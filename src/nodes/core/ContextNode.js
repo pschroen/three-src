@@ -125,7 +125,7 @@ export default ContextNode;
  * @param {Object} [value={}] - The modified context data.
  * @returns {ContextNode}
  */
-export const context = nodeProxy( ContextNode );
+export const context = nodeProxy( ContextNode ).setParameterLength( 1, 2 );
 
 /**
  * TSL function for defining a label context value for a given node.
