@@ -10,7 +10,10 @@ import {
 
 import { mergeGroups, deepCloneAttribute } from './BufferGeometryUtils.js';
 
-/** @module SceneUtils */
+/**
+ * @module SceneUtils
+ * @three_import import * as SceneUtils from 'three/addons/utils/SceneUtils.js';
+ */
 
 const _color = new Color();
 const _matrix = new Matrix4();

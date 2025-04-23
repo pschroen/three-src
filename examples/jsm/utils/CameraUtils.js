@@ -4,7 +4,10 @@ import {
 	Vector3
 } from 'three';
 
-/** @module CameraUtils */
+/**
+ * @module CameraUtils
+ * @three_import import * as CameraUtils from 'three/addons/utils/CameraUtils.js';
+ */
 
 const _va = new Vector3(), // from pe to pa
 	_vb = new Vector3(), // from pe to pb

@@ -123,7 +123,7 @@ export const modelWorldMatrixInverse = uniform( new Matrix4() ).onObjectUpdate( 
  */
 export const modelViewMatrix = ( Fn( ( builder ) => {
 
-	return builder.renderer.nodes.modelViewMatrix || mediumpModelViewMatrix;
+	return builder.renderer.overrideNodes.modelViewMatrix || mediumpModelViewMatrix;
 
 } ).once() )().toVar( 'modelViewMatrix' );
 
