@@ -1004,7 +1004,7 @@ export const mx_worley_distance_1 = Fn( ( [ p_immutable, x_immutable, y_immutabl
 
 	If( metric.equal( int( 3 ) ), () => {
 
-		return max( max( abs( diff.x ), abs( diff.y ) ), abs( diff.z ) );
+		return max( abs( diff.x ), abs( diff.y ), abs( diff.z ) );
 
 	} );
 

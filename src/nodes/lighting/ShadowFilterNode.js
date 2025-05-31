@@ -24,7 +24,7 @@ export const BasicShadowFilter = Fn( ( { depthTexture, shadowCoord, depthLayer }
 
 	let basic = texture( depthTexture, shadowCoord.xy ).label( 't_basic' );
 
-	if ( depthTexture.isDepthArrayTexture ) {
+	if ( depthTexture.isArrayTexture ) {
 
 		basic = basic.depth( depthLayer );
 
@@ -50,7 +50,7 @@ export const PCFShadowFilter = Fn( ( { depthTexture, shadowCoord, shadow, depthL
 
 		let depth = texture( depthTexture, uv );
 
-		if ( depthTexture.isDepthArrayTexture ) {
+		if ( depthTexture.isArrayTexture ) {
 
 			depth = depth.depth( depthLayer );
 
@@ -111,7 +111,7 @@ export const PCFSoftShadowFilter = Fn( ( { depthTexture, shadowCoord, shadow, de
 
 		let depth = texture( depthTexture, uv );
 
-		if ( depthTexture.isDepthArrayTexture ) {
+		if ( depthTexture.isArrayTexture ) {
 
 			depth = depth.depth( depthLayer );
 
@@ -189,7 +189,7 @@ export const VSMShadowFilter = Fn( ( { depthTexture, shadowCoord, depthLayer } )
 
 	let distribution = texture( depthTexture ).sample( shadowCoord.xy );
 
-	if ( depthTexture.isDepthArrayTexture || depthTexture.isDataArrayTexture ) {
+	if ( depthTexture.isArrayTexture ) {
 
 		distribution = distribution.depth( depthLayer );
 

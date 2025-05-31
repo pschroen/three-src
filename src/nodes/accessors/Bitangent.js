@@ -19,7 +19,7 @@ const getBitangent = Fn( ( [ crossNormalTangent, varyingName ], builder ) => {
 
 	if ( builder.material.flatShading !== true ) {
 
-		bitangent = varying( crossNormalTangent, varyingName );
+		bitangent = varying( bitangent, varyingName );
 
 	}
 
