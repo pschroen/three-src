@@ -263,6 +263,6 @@ export const objectViewPosition = nodeProxy( Object3DNode, Object3DNode.VIEW_POS
  * @tsl
  * @function
  * @param {?Object3D} [object3d] - The 3D object.
- * @returns {Object3DNode<vec3>}
+ * @returns {Object3DNode<float>}
  */
 export const objectRadius = nodeProxy( Object3DNode, Object3DNode.RADIUS ).setParameterLength( 1 );
