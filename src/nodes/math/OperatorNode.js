@@ -1,6 +1,6 @@
 import { WebGLCoordinateSystem } from '../../constants.js';
 import TempNode from '../core/TempNode.js';
-import { addMethodChaining, Fn, int, nodeProxy } from '../tsl/TSLCore.js';
+import { addMethodChaining, Fn, int, nodeProxyIntent } from '../tsl/TSLCore.js';
 
 const _vectorOperators = {
 	'==': 'equal',
@@ -419,7 +419,7 @@ export default OperatorNode;
  * @param {...Node} params - Additional input parameters.
  * @returns {OperatorNode}
  */
-export const add = nodeProxy( OperatorNode, '+' ).setParameterLength( 2, Infinity ).setName( 'add' );
+export const add = nodeProxyIntent( OperatorNode, '+' ).setParameterLength( 2, Infinity ).setName( 'add' );
 
 /**
  * Returns the subtraction of two or more value.
@@ -431,7 +431,7 @@ export const add = nodeProxy( OperatorNode, '+' ).setParameterLength( 2, Infinit
  * @param {...Node} params - Additional input parameters.
  * @returns {OperatorNode}
  */
-export const sub = nodeProxy( OperatorNode, '-' ).setParameterLength( 2, Infinity ).setName( 'sub' );
+export const sub = nodeProxyIntent( OperatorNode, '-' ).setParameterLength( 2, Infinity ).setName( 'sub' );
 
 /**
  * Returns the multiplication of two or more value.
@@ -443,7 +443,7 @@ export const sub = nodeProxy( OperatorNode, '-' ).setParameterLength( 2, Infinit
  * @param {...Node} params - Additional input parameters.
  * @returns {OperatorNode}
  */
-export const mul = nodeProxy( OperatorNode, '*' ).setParameterLength( 2, Infinity ).setName( 'mul' );
+export const mul = nodeProxyIntent( OperatorNode, '*' ).setParameterLength( 2, Infinity ).setName( 'mul' );
 
 /**
  * Returns the division of two or more value.
@@ -455,7 +455,7 @@ export const mul = nodeProxy( OperatorNode, '*' ).setParameterLength( 2, Infinit
  * @param {...Node} params - Additional input parameters.
  * @returns {OperatorNode}
  */
-export const div = nodeProxy( OperatorNode, '/' ).setParameterLength( 2, Infinity ).setName( 'div' );
+export const div = nodeProxyIntent( OperatorNode, '/' ).setParameterLength( 2, Infinity ).setName( 'div' );
 
 /**
  * Computes the remainder of dividing the first node by the second one.
@@ -466,7 +466,7 @@ export const div = nodeProxy( OperatorNode, '/' ).setParameterLength( 2, Infinit
  * @param {Node} b - The second input.
  * @returns {OperatorNode}
  */
-export const mod = nodeProxy( OperatorNode, '%' ).setParameterLength( 2 ).setName( 'mod' );
+export const mod = nodeProxyIntent( OperatorNode, '%' ).setParameterLength( 2 ).setName( 'mod' );
 
 /**
  * Checks if two nodes are equal.
@@ -477,7 +477,7 @@ export const mod = nodeProxy( OperatorNode, '%' ).setParameterLength( 2 ).setNam
  * @param {Node} b - The second input.
  * @returns {OperatorNode}
  */
-export const equal = nodeProxy( OperatorNode, '==' ).setParameterLength( 2 ).setName( 'equal' );
+export const equal = nodeProxyIntent( OperatorNode, '==' ).setParameterLength( 2 ).setName( 'equal' );
 
 /**
  * Checks if two nodes are not equal.
@@ -488,7 +488,7 @@ export const equal = nodeProxy( OperatorNode, '==' ).setParameterLength( 2 ).set
  * @param {Node} b - The second input.
  * @returns {OperatorNode}
  */
-export const notEqual = nodeProxy( OperatorNode, '!=' ).setParameterLength( 2 ).setName( 'notEqual' );
+export const notEqual = nodeProxyIntent( OperatorNode, '!=' ).setParameterLength( 2 ).setName( 'notEqual' );
 
 /**
  * Checks if the first node is less than the second.
@@ -499,7 +499,7 @@ export const notEqual = nodeProxy( OperatorNode, '!=' ).setParameterLength( 2 ).
  * @param {Node} b - The second input.
  * @returns {OperatorNode}
  */
-export const lessThan = nodeProxy( OperatorNode, '<' ).setParameterLength( 2 ).setName( 'lessThan' );
+export const lessThan = nodeProxyIntent( OperatorNode, '<' ).setParameterLength( 2 ).setName( 'lessThan' );
 
 /**
  * Checks if the first node is greater than the second.
@@ -510,7 +510,7 @@ export const lessThan = nodeProxy( OperatorNode, '<' ).setParameterLength( 2 ).s
  * @param {Node} b - The second input.
  * @returns {OperatorNode}
  */
-export const greaterThan = nodeProxy( OperatorNode, '>' ).setParameterLength( 2 ).setName( 'greaterThan' );
+export const greaterThan = nodeProxyIntent( OperatorNode, '>' ).setParameterLength( 2 ).setName( 'greaterThan' );
 
 /**
  * Checks if the first node is less than or equal to the second.
@@ -521,7 +521,7 @@ export const greaterThan = nodeProxy( OperatorNode, '>' ).setParameterLength( 2 
  * @param {Node} b - The second input.
  * @returns {OperatorNode}
  */
-export const lessThanEqual = nodeProxy( OperatorNode, '<=' ).setParameterLength( 2 ).setName( 'lessThanEqual' );
+export const lessThanEqual = nodeProxyIntent( OperatorNode, '<=' ).setParameterLength( 2 ).setName( 'lessThanEqual' );
 
 /**
  * Checks if the first node is greater than or equal to the second.
@@ -532,7 +532,7 @@ export const lessThanEqual = nodeProxy( OperatorNode, '<=' ).setParameterLength(
  * @param {Node} b - The second input.
  * @returns {OperatorNode}
  */
-export const greaterThanEqual = nodeProxy( OperatorNode, '>=' ).setParameterLength( 2 ).setName( 'greaterThanEqual' );
+export const greaterThanEqual = nodeProxyIntent( OperatorNode, '>=' ).setParameterLength( 2 ).setName( 'greaterThanEqual' );
 
 /**
  * Performs a logical AND operation on multiple nodes.
@@ -542,7 +542,7 @@ export const greaterThanEqual = nodeProxy( OperatorNode, '>=' ).setParameterLeng
  * @param {...Node} nodes - The input nodes to be combined using AND.
  * @returns {OperatorNode}
  */
-export const and = nodeProxy( OperatorNode, '&&' ).setParameterLength( 2, Infinity ).setName( 'and' );
+export const and = nodeProxyIntent( OperatorNode, '&&' ).setParameterLength( 2, Infinity ).setName( 'and' );
 
 /**
  * Performs a logical OR operation on multiple nodes.
@@ -552,7 +552,7 @@ export const and = nodeProxy( OperatorNode, '&&' ).setParameterLength( 2, Infini
  * @param {...Node} nodes - The input nodes to be combined using OR.
  * @returns {OperatorNode}
  */
-export const or = nodeProxy( OperatorNode, '||' ).setParameterLength( 2, Infinity ).setName( 'or' );
+export const or = nodeProxyIntent( OperatorNode, '||' ).setParameterLength( 2, Infinity ).setName( 'or' );
 
 /**
  * Performs logical NOT on a node.
@@ -562,7 +562,7 @@ export const or = nodeProxy( OperatorNode, '||' ).setParameterLength( 2, Infinit
  * @param {Node} value - The value.
  * @returns {OperatorNode}
  */
-export const not = nodeProxy( OperatorNode, '!' ).setParameterLength( 1 ).setName( 'not' );
+export const not = nodeProxyIntent( OperatorNode, '!' ).setParameterLength( 1 ).setName( 'not' );
 
 /**
  * Performs logical XOR on two nodes.
@@ -573,7 +573,7 @@ export const not = nodeProxy( OperatorNode, '!' ).setParameterLength( 1 ).setNam
  * @param {Node} b - The second input.
  * @returns {OperatorNode}
  */
-export const xor = nodeProxy( OperatorNode, '^^' ).setParameterLength( 2 ).setName( 'xor' );
+export const xor = nodeProxyIntent( OperatorNode, '^^' ).setParameterLength( 2 ).setName( 'xor' );
 
 /**
  * Performs bitwise AND on two nodes.
@@ -584,7 +584,7 @@ export const xor = nodeProxy( OperatorNode, '^^' ).setParameterLength( 2 ).setNa
  * @param {Node} b - The second input.
  * @returns {OperatorNode}
  */
-export const bitAnd = nodeProxy( OperatorNode, '&' ).setParameterLength( 2 ).setName( 'bitAnd' );
+export const bitAnd = nodeProxyIntent( OperatorNode, '&' ).setParameterLength( 2 ).setName( 'bitAnd' );
 
 /**
  * Performs bitwise NOT on a node.
@@ -595,7 +595,7 @@ export const bitAnd = nodeProxy( OperatorNode, '&' ).setParameterLength( 2 ).set
  * @param {Node} b - The second input.
  * @returns {OperatorNode}
  */
-export const bitNot = nodeProxy( OperatorNode, '~' ).setParameterLength( 2 ).setName( 'bitNot' );
+export const bitNot = nodeProxyIntent( OperatorNode, '~' ).setParameterLength( 2 ).setName( 'bitNot' );
 
 /**
  * Performs bitwise OR on two nodes.
@@ -606,7 +606,7 @@ export const bitNot = nodeProxy( OperatorNode, '~' ).setParameterLength( 2 ).set
  * @param {Node} b - The second input.
  * @returns {OperatorNode}
  */
-export const bitOr = nodeProxy( OperatorNode, '|' ).setParameterLength( 2 ).setName( 'bitOr' );
+export const bitOr = nodeProxyIntent( OperatorNode, '|' ).setParameterLength( 2 ).setName( 'bitOr' );
 
 /**
  * Performs bitwise XOR on two nodes.
@@ -617,7 +617,7 @@ export const bitOr = nodeProxy( OperatorNode, '|' ).setParameterLength( 2 ).setN
  * @param {Node} b - The second input.
  * @returns {OperatorNode}
  */
-export const bitXor = nodeProxy( OperatorNode, '^' ).setParameterLength( 2 ).setName( 'bitXor' );
+export const bitXor = nodeProxyIntent( OperatorNode, '^' ).setParameterLength( 2 ).setName( 'bitXor' );
 
 /**
  * Shifts a node to the left.
@@ -628,7 +628,7 @@ export const bitXor = nodeProxy( OperatorNode, '^' ).setParameterLength( 2 ).set
  * @param {Node} b - The value to shift.
  * @returns {OperatorNode}
  */
-export const shiftLeft = nodeProxy( OperatorNode, '<<' ).setParameterLength( 2 ).setName( 'shiftLeft' );
+export const shiftLeft = nodeProxyIntent( OperatorNode, '<<' ).setParameterLength( 2 ).setName( 'shiftLeft' );
 
 /**
  * Shifts a node to the right.
@@ -639,7 +639,7 @@ export const shiftLeft = nodeProxy( OperatorNode, '<<' ).setParameterLength( 2 )
  * @param {Node} b - The value to shift.
  * @returns {OperatorNode}
  */
-export const shiftRight = nodeProxy( OperatorNode, '>>' ).setParameterLength( 2 ).setName( 'shiftRight' );
+export const shiftRight = nodeProxyIntent( OperatorNode, '>>' ).setParameterLength( 2 ).setName( 'shiftRight' );
 
 /**
  * Increments a node by 1.
