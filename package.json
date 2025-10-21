@@ -3,7 +3,15 @@
   "version": "0.180.0",
   "description": "JavaScript 3D library",
   "type": "module",
-  "main": "src/Three.js",
+  "main": "./src/Three.js",
+  "exports": {
+    ".": "./src/Three.js",
+    "./examples/fonts/*": "./examples/fonts/*",
+    "./examples/jsm/*": "./examples/jsm/*",
+    "./addons": "./examples/jsm/Addons.js",
+    "./addons/*": "./examples/jsm/*",
+    "./src/*": "./src/*"
+  },
   "sideEffects": false,
   "directories": {
     "example": "examples"
