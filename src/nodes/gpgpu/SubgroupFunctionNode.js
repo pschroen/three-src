@@ -203,6 +203,7 @@ export default SubgroupFunctionNode;
  * Returns true if this invocation has the lowest subgroup_invocation_id
  * among active invocations in the subgroup.
  *
+ * @tsl
  * @method
  * @return {bool} The result of the computation.
  */
@@ -212,6 +213,7 @@ export const subgroupElect = nodeProxyIntent( SubgroupFunctionNode, SubgroupFunc
  * Returns a set of bitfields where the bit corresponding to subgroup_invocation_id
  * is 1 if pred is true for that active invocation and 0 otherwise.
  *
+ * @tsl
  * @method
  * @param {bool} pred - A boolean that sets the bit corresponding to the invocations subgroup invocation id.
  * @return {vec4<u32>}- A bitfield corresponding to the pred value of each subgroup invocation.
@@ -221,6 +223,7 @@ export const subgroupBallot = nodeProxyIntent( SubgroupFunctionNode, SubgroupFun
 /**
  * A reduction that adds e among all active invocations and returns that result.
  *
+ * @tsl
  * @method
  * @param {number} e - The value provided to the reduction by the current invocation.
  * @return {number} The accumulated result of the reduction operation.
@@ -230,6 +233,7 @@ export const subgroupAdd = nodeProxyIntent( SubgroupFunctionNode, SubgroupFuncti
 /**
  * An inclusive scan returning the sum of e for all active invocations with subgroup_invocation_id less than or equal to this invocation.
  *
+ * @tsl
  * @method
  * @param {number} e - The value provided to the inclusive scan by the current invocation.
  * @return {number} The accumulated result of the inclusive scan operation.
@@ -239,6 +243,7 @@ export const subgroupInclusiveAdd = nodeProxyIntent( SubgroupFunctionNode, Subgr
 /**
  * An exclusive scan that returns the sum of e for all active invocations with subgroup_invocation_id less than this invocation.
  *
+ * @tsl
  * @method
  * @param {number} e - The value provided to the exclusive scan by the current invocation.
  * @return {number} The accumulated result of the exclusive scan operation.
@@ -248,6 +253,7 @@ export const subgroupExclusiveAdd = nodeProxyIntent( SubgroupFunctionNode, Subgr
 /**
  * A reduction that multiplies e among all active invocations and returns that result.
  *
+ * @tsl
  * @method
  * @param {number} e - The value provided to the reduction by the current invocation.
  * @return {number} The accumulated result of the reduction operation.
@@ -257,6 +263,7 @@ export const subgroupMul = nodeProxyIntent( SubgroupFunctionNode, SubgroupFuncti
 /**
  * An inclusive scan returning the product of e for all active invocations with subgroup_invocation_id less than or equal to this invocation.
  *
+ * @tsl
  * @method
  * @param {number} e - The value provided to the inclusive scan by the current invocation.
  * @return {number} The accumulated result of the inclusive scan operation.
@@ -266,6 +273,7 @@ export const subgroupInclusiveMul = nodeProxyIntent( SubgroupFunctionNode, Subgr
 /**
  * An exclusive scan that returns the product of e for all active invocations with subgroup_invocation_id less than this invocation.
  *
+ * @tsl
  * @method
  * @param {number} e - The value provided to the exclusive scan by the current invocation.
  * @return {number} The accumulated result of the exclusive scan operation.
@@ -275,6 +283,7 @@ export const subgroupExclusiveMul = nodeProxyIntent( SubgroupFunctionNode, Subgr
 /**
  * A reduction that performs a bitwise and of e among all active invocations and returns that result.
  *
+ * @tsl
  * @method
  * @param {number} e - The value provided to the reduction by the current invocation.
  * @return {number} The result of the reduction operation.
@@ -284,6 +293,7 @@ export const subgroupAnd = nodeProxyIntent( SubgroupFunctionNode, SubgroupFuncti
 /**
  * A reduction that performs a bitwise or of e among all active invocations and returns that result.
  *
+ * @tsl
  * @method
  * @param {number} e - The value provided to the reduction by the current invocation.
  * @return {number} The result of the reduction operation.
@@ -293,6 +303,7 @@ export const subgroupOr = nodeProxyIntent( SubgroupFunctionNode, SubgroupFunctio
 /**
  * A reduction that performs a bitwise xor of e among all active invocations and returns that result.
  *
+ * @tsl
  * @method
  * @param {number} e - The value provided to the reduction by the current invocation.
  * @return {number} The result of the reduction operation.
@@ -302,6 +313,7 @@ export const subgroupXor = nodeProxyIntent( SubgroupFunctionNode, SubgroupFuncti
 /**
  * A reduction that performs a min of e among all active invocations and returns that result.
  *
+ * @tsl
  * @method
  * @param {number} e - The value provided to the reduction by the current invocation.
  * @return {number} The result of the reduction operation.
@@ -311,6 +323,7 @@ export const subgroupMin = nodeProxyIntent( SubgroupFunctionNode, SubgroupFuncti
 /**
  * A reduction that performs a max of e among all active invocations and returns that result.
  *
+ * @tsl
  * @method
  * @param {number} e - The value provided to the reduction by the current invocation.
  * @return {number} The result of the reduction operation.
@@ -320,6 +333,7 @@ export const subgroupMax = nodeProxyIntent( SubgroupFunctionNode, SubgroupFuncti
 /**
  * Returns true if e is true for all active invocations in the subgroup.
  *
+ * @tsl
  * @method
  * @return {bool} The result of the computation.
  */
@@ -328,6 +342,7 @@ export const subgroupAll = nodeProxyIntent( SubgroupFunctionNode, SubgroupFuncti
 /**
  * Returns true if e is true for any active invocation in the subgroup
  *
+ * @tsl
  * @method
  * @return {bool} The result of the computation.
  */
@@ -336,6 +351,7 @@ export const subgroupAny = nodeProxyIntent( SubgroupFunctionNode, SubgroupFuncti
 /**
  * Broadcasts e from the active invocation with the lowest subgroup_invocation_id in the subgroup to all other active invocations.
  *
+ * @tsl
  * @method
  * @param {number} e - The value to broadcast from the lowest subgroup invocation.
  * @param {number} id - The subgroup invocation to broadcast from.
@@ -346,6 +362,7 @@ export const subgroupBroadcastFirst = nodeProxyIntent( SubgroupFunctionNode, Sub
 /**
  * Swaps e between invocations in the quad in the X direction.
  *
+ * @tsl
  * @method
  * @param {number} e - The value to swap from the current invocation.
  * @return {number} The value received from the swap operation.
@@ -355,6 +372,7 @@ export const quadSwapX = nodeProxyIntent( SubgroupFunctionNode, SubgroupFunction
 /**
  * Swaps e between invocations in the quad in the Y direction.
  *
+ * @tsl
  * @method
  * @param {number} e - The value to swap from the current invocation.
  * @return {number} The value received from the swap operation.
@@ -364,6 +382,7 @@ export const quadSwapY = nodeProxyIntent( SubgroupFunctionNode, SubgroupFunction
 /**
  * Swaps e between invocations in the quad diagonally.
  *
+ * @tsl
  * @method
  * @param {number} e - The value to swap from the current invocation.
  * @return {number} The value received from the swap operation.
@@ -373,6 +392,7 @@ export const quadSwapDiagonal = nodeProxyIntent( SubgroupFunctionNode, SubgroupF
 /**
  * Broadcasts e from the invocation whose subgroup_invocation_id matches id, to all active invocations.
  *
+ * @tsl
  * @method
  * @param {number} e - The value to broadcast from subgroup invocation 'id'.
  * @param {number} id - The subgroup invocation to broadcast from.
@@ -383,6 +403,7 @@ export const subgroupBroadcast = nodeProxyIntent( SubgroupFunctionNode, Subgroup
 /**
  * Returns v from the active invocation whose subgroup_invocation_id matches id
  *
+ * @tsl
  * @method
  * @param {number} v - The value to return from subgroup invocation id^mask.
  * @param {number} id - The subgroup invocation which returns the value v.
@@ -393,6 +414,7 @@ export const subgroupShuffle = nodeProxyIntent( SubgroupFunctionNode, SubgroupFu
 /**
  * Returns v from the active invocation whose subgroup_invocation_id matches subgroup_invocation_id ^ mask.
  *
+ * @tsl
  * @method
  * @param {number} v - The value to return from subgroup invocation id^mask.
  * @param {number} mask - A bitmask that determines the target invocation via a XOR operation.
@@ -403,6 +425,7 @@ export const subgroupShuffleXor = nodeProxyIntent( SubgroupFunctionNode, Subgrou
 /**
  * Returns v from the active invocation whose subgroup_invocation_id matches subgroup_invocation_id - delta
  *
+ * @tsl
  * @method
  * @param {number} v - The value to return from subgroup invocation id^mask.
  * @param {number} delta - A value that offsets the current in.
@@ -413,6 +436,7 @@ export const subgroupShuffleUp = nodeProxyIntent( SubgroupFunctionNode, Subgroup
 /**
  * Returns v from the active invocation whose subgroup_invocation_id matches subgroup_invocation_id + delta
  *
+ * @tsl
  * @method
  * @param {number} v - The value to return from subgroup invocation id^mask.
  * @param {number} delta - A value that offsets the current subgroup invocation.
@@ -423,6 +447,7 @@ export const subgroupShuffleDown = nodeProxyIntent( SubgroupFunctionNode, Subgro
 /**
  * Broadcasts e from the quad invocation with id equal to id.
  *
+ * @tsl
  * @method
  * @param {number} e - The value to broadcast.
  * @return {number} The broadcast value.
