@@ -35,12 +35,19 @@ class RenderContexts {
 	 * @param {Scene} scene - The scene.
 	 * @param {Camera} camera - The camera that is used to render the scene.
 	 * @param {?RenderTarget} [renderTarget=null] - The active render target.
+	 * @param {?MRT} [mrt=null] - The active multiple render target.
 	 * @return {RenderContext} The render context.
 	 */
-	get( scene, camera, renderTarget = null ) {
+	get( scene, camera, renderTarget = null, mrt = null ) {
 
 		_chainKeys[ 0 ] = scene;
 		_chainKeys[ 1 ] = camera;
+
+		if ( mrt !== null ) {
+
+			_chainKeys[ 2 ] = mrt;
+
+		}
 
 		let attachmentState;
 
